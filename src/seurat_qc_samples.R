@@ -4,6 +4,8 @@ library(ggplot2)
 library(scDblFinder)
 library(BiocParallel)
 
+# test comment
+
 out_dir <- "results/seurat_qc_samples/"
 
 dir.create(out_dir, showWarnings = F, recursive = T)
