@@ -174,8 +174,70 @@ samples <- lapply(samples, function(sample) {
   
 })
 
+# redo pca elbow plots, to ensure PCA number is still good
 
+plot_dir <- paste0(out_dir, "5_post_doublet_pca_plots/")
+dir.create(plot_dir, showWarnings = F)
 
+print("Post Doublet PCA plots ...")
+
+samples <- lapply(samples, function(sample) {
+  
+  sample_name <- sample@project.name
+  
+  print(sample_name)
+  
+  # regress out mitochondrial percentage for SC Transform
+  sample <- SCTransform(sample, vars.to.regress = "percent.mt")
+  
+  sample <- RunPCA(sample)
+  
+  ElbowPlot(sample, ndims=30) + 
+    labs(title=sample_name) +
+    scale_x_continuous(breaks=seq(0,30,5)) +
+    scale_y_continuous(breaks=seq(0,30,5), limits=c(0,NA))
+  ggsave(paste0(plot_dir, sample_name, ".pca_elbow_plot.png"), width=6, height=5, bg="white")
+  
+  return(sample)
+})
+
+# clustering
+
+# it looks like the elbow based number for dimensions should be 20, at least for now
+
+max_pc_dim <- 20
+
+plot_dir <- paste0(out_dir, "6_clustering_umap/")
+dir.create(plot_dir, showWarnings = F)
+
+print("Clustering and UMAP ...")
+
+samples <- lapply(samples, function(sample) {
+  
+  sample_name <- sample@project.name
+  
+  print(sample_name)
+  
+  sample <- FindNeighbors(sample, dims=1:max_pc_dim)
+  sample <- FindClusters(sample)
+  
+  sample <- RunUMAP(sample, dims=1:max_pc_dim)
+  
+  DimPlot(sample, reduction="umap")
+  ggsave(paste0(plot_dir, sample_name, ".cluster_umap.png"), width=8, height=6)
+  
+  return(sample)
+})
+
+# output final samples
+
+for (sample in samples) {
+  
+  sample_name <- sample@project.name
+  
+  SaveSeuratRds(sample, file=paste0(out_dir, sample_name, ".qc_processed.seurat.RDS"))
+  
+}
 
 
 
