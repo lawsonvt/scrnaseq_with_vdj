@@ -1,7 +1,10 @@
 library(Seurat)
 
-sample_dir <- "results/seurat_qc_samples/"
+out_dir <- "results/integrate_seurat_samples/"
+dir.create(out_dir, showWarnings = F)
 
+
+sample_dir <- "results/seurat_qc_samples/"
 # read in seurat objects
 
 seurat_files <- list.files(path=sample_dir, 
@@ -21,4 +24,9 @@ names(seurat_list) <- unlist(lapply(seurat_list, function(x) {x@project.name}))
 # merge them ...
 seurat_merged <- merge(x=seurat_list[[1]],
                        y=seurat_list[-1],
-                       add.cell.ids=names(seurat_list))
+                       add.cell.ids=names(seurat_list),
+                       merge.data=T)
+
+
+
+
