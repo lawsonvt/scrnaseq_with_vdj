@@ -41,7 +41,7 @@ ElbowPlot(seurat_merged, ndims=30) +
   labs(title=sample_name) +
   scale_x_continuous(breaks=seq(0,30,5)) +
   scale_y_continuous(breaks=seq(0,30,5), limits=c(0,NA))
-ggsave(paste0(plot_dir, "merge_seurat.pca_elbow_plot.png"), width=6, height=5, bg="white")
+ggsave(paste0(out_dir, "merge_seurat.pca_elbow_plot.png"), width=6, height=5, bg="white")
 
 
 
