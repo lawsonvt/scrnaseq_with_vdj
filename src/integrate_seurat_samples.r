@@ -39,7 +39,7 @@ seurat_merged <- RunPCA(seurat_merged)
 
 # inspect elbow plot
 ElbowPlot(seurat_merged, ndims=30) + 
-  labs(title=sample_name) +
+  labs(title="Merged Samples (not integrated)") +
   scale_x_continuous(breaks=seq(0,30,5)) +
   scale_y_continuous(breaks=seq(0,30,5), limits=c(0,NA))
 ggsave(paste0(out_dir, "merge_seurat.pca_elbow_plot.png"), width=6, height=5, bg="white")
