@@ -49,7 +49,7 @@ max_pc_dim <- 20
 
 # first do some clustering with the merged data
 seurat_merged <- FindNeighbors(seurat_merged, dims = 1:max_pc_dim, reduction = "pca")
-seurat_merged <- FindClusters(seurat_merged, resolution = 2, cluster.name = "unintegrated_clusters")
+seurat_merged <- FindClusters(seurat_merged, cluster.name = "unintegrated_clusters")
 
 # plot out a umap which will showcase the batch effect
 seurat_merged <- RunUMAP(seurat_merged, dims = 1:max_pc_dim, reduction="pca", reduction.name="umap.unintegrated")
@@ -66,7 +66,7 @@ seurat_merged <- IntegrateLayers(seurat_merged,
 
 # cluster the harmonized data
 seurat_merged <- FindNeighbors(seurat_merged, dims = 1:max_pc_dim, reduction = "harmony")
-seurat_merged <- FindClusters(seurat_merged, resolution = 2, cluster.name = "harmony_clusters")
+seurat_merged <- FindClusters(seurat_merged, cluster.name = "harmony_clusters")
 
 # create umap
 seurat_merged <- RunUMAP(seurat_merged, dims = 1:max_pc_dim, reduction="harmony", reduction.name="umap.harmony")
