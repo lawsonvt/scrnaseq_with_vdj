@@ -31,6 +31,7 @@ seurat_merged <- merge(x=seurat_list[[1]],
 SaveSeuratRds(seurat_merged, paste0(out_dir, "all_samples.merged_seurat.RDS"))
 
 # integrate!
+# no normalization required, since we merge the normalized data as well
 seurat_merged <- FindVariableFeatures(seurat_merged)
 seurat_merged <- ScaleData(seurat_merged)
 seurat_merged <- RunPCA(seurat_merged)
