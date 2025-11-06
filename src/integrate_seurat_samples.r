@@ -1,4 +1,5 @@
 library(Seurat)
+library(ggplot2)
 
 out_dir <- "results/integrate_seurat_samples/"
 dir.create(out_dir, showWarnings = F)
