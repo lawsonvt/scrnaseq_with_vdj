@@ -54,7 +54,7 @@ seurat_merged <- FindClusters(seurat_merged, resolution = 2, cluster.name = "uni
 # plot out a umap which will showcase the batch effect
 seurat_merged <- RunUMAP(seurat_merged, dims = 1:max_pc_dim, reduction="pca", reduction.name="umap.unintegrated")
 
-Dimplot(seurat_merged, reduction="umap.unintegrated", group.by= "orig.ident")
+DimPlot(seurat_merged, reduction="umap.unintegrated", group.by= "orig.ident")
 ggsave(paste0(out_dir, "merge_seurat.umap.png"), width=8, height=6)
 
 # INTEGRATE
