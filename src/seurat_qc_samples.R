@@ -3,6 +3,7 @@ library(ggplot2)
 #library(DoubletFinder)
 library(scDblFinder)
 library(BiocParallel)
+library(scRepertoire)
 
 # test comment
 
@@ -104,6 +105,8 @@ samples <- lapply(samples, function(sample) {
   sample_name <- sample@project.name
   
   print(sample_name)
+  # quiet the TCR genes from being variable features
+  sample <- quietTCRgenes(sample)
   
   # regress out mitochondrial percentage for SC Transform
   sample <- SCTransform(sample, vars.to.regress = "percent.mt")
@@ -186,6 +189,8 @@ samples <- lapply(samples, function(sample) {
   sample_name <- sample@project.name
   
   print(sample_name)
+  # quiet the TCR genes from being variable features
+  sample <- quietTCRgenes(sample)
   
   # regress out mitochondrial percentage for SC Transform
   sample <- SCTransform(sample, vars.to.regress = "percent.mt")
