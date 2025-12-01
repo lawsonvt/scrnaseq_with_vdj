@@ -81,7 +81,7 @@ DimPlot(seurat_merged, reduction="umap.harmony", group.by= c("orig.ident","harmo
 ggsave(paste0(out_dir, "integrated_seurat.umap.png"), width=14, height=6)
 
 # save the integrated seurat
-SaveSeuratRds(seurat_merged, paste0(out_dir, "all_samples.intergrated_seurat.RDS"))
+SaveSeuratRds(seurat_merged, paste0(out_dir, "all_samples.integrated_seurat.RDS"))
 
 
 
