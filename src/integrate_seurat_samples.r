@@ -1,5 +1,6 @@
 library(Seurat)
 library(ggplot2)
+library(scRepertoire)
 
 out_dir <- "results/integrate_seurat_samples/"
 dir.create(out_dir, showWarnings = F)
@@ -30,6 +31,10 @@ seurat_merged <- merge(x=seurat_list[[1]],
 
 # save the merged seurat
 SaveSeuratRds(seurat_merged, paste0(out_dir, "all_samples.merged_seurat.RDS"))
+
+
+# quiet the TCR genes from being variable features
+seurat_merged <- quietTCRgenes(seurat_merged)
 
 # no normalization required, since we merge the normalized data as well
 seurat_merged <- FindVariableFeatures(seurat_merged)
