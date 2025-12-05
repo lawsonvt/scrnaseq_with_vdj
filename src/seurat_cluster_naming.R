@@ -98,6 +98,14 @@ dotplot_list <- lapply(names(lab_cluster_markers), function(cluster_name) {
 plot_grid(plotlist = dotplot_list, nrow = 1)
 ggsave(paste0(out_dir, "total_dotplots.png"), width=18, height=7, bg="white")
 
+# convert marker list to dataframe
+lab_cluster_markers_df <- bind_rows(lapply(names(lab_cluster_markers), function(cluster_name) {
+  
+  data.frame(cluster_name=cluster_name,
+             marker_gene=lab_cluster_markers[[cluster_name]])
+  
+}))
+
 DotPlot(int_seu, lab_cluster_markers_df$marker_gene)
 ggsave(paste0(out_dir, "simple_total_dotplots.png"), width=18, height=7, bg="white")
 
@@ -108,13 +116,7 @@ agg_seu_rna <- t(as.matrix(agg_seu$RNA))
 # row scale it
 agg_seu_rna_s <- scale(agg_seu_rna)
 
-# convert marker list to dataframe
-lab_cluster_markers_df <- bind_rows(lapply(names(lab_cluster_markers), function(cluster_name) {
-  
-  data.frame(cluster_name=cluster_name,
-             marker_gene=lab_cluster_markers[[cluster_name]])
-  
-}))
+
 
 # make heatmap
 
@@ -218,4 +220,49 @@ ggsave(paste0(out_dir, "cluster_cells_umap.per_sample.png"), width=17, height=10
 DimPlot(int_seu, reduction="umap.harmony", group.by="harmony_clusters",
         label=T, split.by = "orig.ident", ncol=4, raster=F)
 ggsave(paste0(out_dir, "harmony_clusters_umap.per_sample.png"), width=17, height=10)
+
+# additional marker list (see what else is there)
+
+add_markers <- list(Neurons=c("Rbfox3", "Map2"),
+                    Oligodendrocytes=c("Mbp", "Olig2"),
+                    Astrocytes=c("Gfap", "Aldh1l1"),
+                    "Endothelial Cells"=c("Pecam1", "Cdh5"),
+                    Pericytes=c("Pdgfrb", "Rgs5"),
+                    OPCs=c("Pdgfra", "Cspg4"))
+
+add_markers_missing <- lapply(add_markers, function(gene_list) {
+  
+  gene_list[!gene_list %in% analysis_genes]
+  
+})
+# none missing
+# cow dot plot
+
+
+dotplot_list <- lapply(names(add_markers), function(cluster_name) {
+  
+  markers <- add_markers[[cluster_name]]
+  
+  DotPlot(int_seu, features = markers) + RotatedAxis() + labs(x=NULL, y=NULL, title=cluster_name) +
+    theme(legend.position="none")
+  
+})
+
+plot_grid(plotlist = dotplot_list, nrow = 1)
+ggsave(paste0(out_dir, "extra_markers_dotplots.png"), width=14, height=7, bg="white")
+
+# looks like we have some pericytes too!
+
+# but what about cluster 16?
+
+Idents(int_seu) <- "harmony_clusters"
+
+c16_degs <- FindMarkers(int_seu,
+                        ident.1 = "16",
+                        test.use="wilcox")
+
+
+
+
+
 
