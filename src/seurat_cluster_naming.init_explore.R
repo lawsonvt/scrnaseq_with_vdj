@@ -9,7 +9,7 @@ library(circlize)
 library(RColorBrewer)
 library(openxlsx)
 
-out_dir <- "results/seurat_cluster_naming/"
+out_dir <- "results/seurat_cluster_naming.init_explore/"
 dir.create(out_dir, showWarnings = F)
 
 # cluster markers as supplied by Lukens Lab
