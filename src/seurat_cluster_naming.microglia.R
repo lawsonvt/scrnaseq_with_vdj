@@ -118,3 +118,79 @@ FeaturePlot(int_seu,
 
 
 
+# potential new annotations
+
+harmony_clusters <- sort(unique(cell_meta$harmony_clusters))
+
+mg_cluster_xref <- data.frame(harmony_clusters=harmony_clusters,
+                           cell_cluster.microglia_subtype=c("Microglia - HS", 
+                                          "Microglia",
+                                          "Microglia",
+                                          "Microglia - HS",
+                                          "Microglia - DAM",
+                                          "Microglia - HS",
+                                          "Microglia",
+                                          "Microglia - HS",
+                                          "Macrophages",
+                                          "Microglia - HS",
+                                          "Microglia",
+                                          "Macrophages",
+                                          "Microglia - CP",
+                                          "Microglia - CP",
+                                          "T Cells",
+                                          "Microglia - IR",
+                                          "Neutrophils",
+                                          "B Cells",
+                                          "Monocytes",
+                                          "Proliferating Cells",
+                                          "Monocytes",
+                                          "Pericytes",
+                                          "Macrophages",
+                                          "Monocytes",
+                                          "Proliferating Cells",
+                                          "B Cells",
+                                          "Proliferating Cells"))
+
+# save the new xref
+
+write.xlsx(mg_cluster_xref, file=paste0(out_dir, "microglia_subcluster_celltypes.xlsx"), colWidths="auto")
+
+
+# add in to dataset
+
+# merge them into the metadata
+metadata <- int_seu@meta.data
+# merge in new cluster names
+
+metadata$cell_id <- rownames(metadata)
+
+metadata <- merge(metadata,
+                  mg_cluster_xref,
+                  by="harmony_clusters")
+
+# fix the order
+rownames(metadata) <- metadata$cell_id
+metadata <- metadata[rownames(int_seu@meta.data),]
+
+# add back into object
+int_seu <- AddMetaData(int_seu, metadata$cell_cluster.microglia_subtype, col.name="cell_cluster.microglia_subtype")
+
+p1 <- DimPlot(int_seu, reduction="umap.harmony", group.by= "harmony_clusters",
+              label=T) + labs(x="UMAP 1", y="UMAP 2", title="Harmony Clusters") + 
+  theme(legend.position = "none")
+
+p2 <- DimPlot(int_seu, reduction="umap.harmony", group.by= "cell_cluster",
+              label=T) + labs(x="UMAP 1", y="UMAP 2", title="Cell Types") + 
+  theme(legend.position = "none")
+
+p3 <- DimPlot(int_seu, reduction="umap.harmony", group.by= "cell_cluster.microglia_subtype",
+              label=T, cols="Set3", label.box = F, label.size=3) + labs(x="UMAP 1", y="UMAP 2", title="Cell Types") + 
+  theme(legend.position = "none")
+
+plot_grid(p1, p2, p3, nrow=1)
+ggsave(paste0(out_dir, "cluster_cells_umap.without_legend.png"), width=16, height=6)
+
+
+SaveSeuratRds(int_seu, file=paste0(out_dir, "cell_named.microglia_subtype.seurat.RDS"))
+
+
