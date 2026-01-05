@@ -1,5 +1,6 @@
 library(Seurat)
 library(SeuratObject)
+library(ggplot2)
 
 out_dir <- "results/seurat_cluster_microglia_subset/"
 dir.create(out_dir, showWarnings = F)
