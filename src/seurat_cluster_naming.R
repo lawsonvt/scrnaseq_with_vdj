@@ -122,6 +122,62 @@ DimPlot(int_seu, reduction="umap.harmony", group.by="cell_cluster",
   theme(legend.position = "none") + labs(x="UMAP 1", y= "UMAP 2", title="Cell Types")
 ggsave(paste0(out_dir, "cluster_cells_umap.per_sample.png"), width=17, height=10)
 
+# barplots!
+
+metadata$sample <- metadata$orig.ident
+
+# factorize for plotting
+sample_levels <- c("B-Q617-WT",
+                   "G-W138-WT",
+                   "C-Q635-KO",
+                   "F-W137-KO",
+                   "D-Q619-PS19-WT",
+                   "E-W136-PS19-WT",
+                   "A-Q637-PS19-KO",
+                   "H-E806-PS19-KO")
+
+metadata$sample <- factor(as.character(metadata$sample),
+                           levels=sample_levels)
+
+ggplot(metadata,
+       aes(x=cell_cluster,
+           fill=sample)) +
+  geom_bar(position="dodge", color="black") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  labs(x=NULL, y="Cell Count") +
+  theme(axis.text.x = element_text(angle=35, hjust=1))
+ggsave(paste0(out_dir, "total_celltypes.cell_count.barplot.png"),
+       width=6, height=4)
+
+ggplot(metadata,
+       aes(x=sample,
+           fill=sample)) +
+  geom_bar(position="dodge", color="black") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  labs(x=NULL, y="Cell Count") +
+  theme(axis.text.x = element_text(angle=35, hjust=1))
+ggsave(paste0(out_dir, "total.cell_count.barplot.png"),
+       width=6, height=4)
+
+# remove the microglia
+
+ggplot(metadata[metadata$cell_cluster != "Microglia",],
+       aes(x=cell_cluster,
+           fill=sample)) +
+  geom_bar(position="dodge", color="black") +
+  theme_bw() +
+  scale_fill_brewer(palette = "Paired") +
+  labs(x=NULL, y="Cell Count") +
+  theme(axis.text.x = element_text(angle=35, hjust=1))
+ggsave(paste0(out_dir, "non_microglia.cell_count.barplot.png"),
+       width=6, height=4)
+
+
+
+
+
 # save things
 write.xlsx(cluster_xref, paste0(out_dir, "cluster_xref.xlsx"), colWidths="auto")
 
