@@ -5,6 +5,7 @@ library(plyr)
 library(dplyr)
 library(openxlsx)
 library(ggplot2)
+library(ggrepel)
 
 out_dir <- "results/diff_exp_analysis.pseudobulk/"
 dir.create(out_dir, showWarnings = F)
@@ -150,6 +151,39 @@ ggplot(deg_counts,
   geom_text(aes(label=Freq), vjust=-0.5) +
   theme_bw() +
   theme(axis.text.x = element_text(angle=35, hjust=1)) +
-  labs(x=NULL, y="DEG count at FDR < 0.05")
+  labs(x=NULL, y="DEG count at FDR < 0.05", title="PS19-KO - PS19-WT")
 ggsave(paste0(out_dir, "ps19ko_minus_ps19wt.deg_counts.png"), width=6, height=5)
+
+# volcano plots
+results_df$log_p <- -log(results_df$pvalue)
+
+sig_results_df <- results_df[results_df$padj < 0.05,]
+
+logp_threshs <- data.frame(cell_type=unique(sig_results_df$cell_type),
+                           thresh=sapply(unique(sig_results_df$cell_type), function(cell) {
+                             -log(max(sig_results_df[sig_results_df$cell_type == cell,]$pvalue))
+                           }))
+
+ggplot(results_df,
+       aes(x=log2FoldChange,
+           y=log_p)) +
+  geom_point(alpha=0.4, color="black") +
+  facet_wrap(~ cell_type, scales="free", nrow=2) +
+  geom_hline(data=logp_threshs,
+             aes(yintercept = thresh),
+             color="red", linetype=2) +
+  geom_point(data=sig_results_df,
+             color="red") +
+  geom_text_repel(data=sig_results_df,
+                  aes(label=gene),
+                  color="red", size=2.5,
+                  max.overlaps = 50) +
+  theme_bw() +
+  labs(x="Log2 Fold Change", y="-log(P-Value)", title="PS19-KO - PS19-WT")
+ggsave(paste0(out_dir, "ps19ko_minus_ps19wt.volcano_plots.png"), width=12, height=8)
+
+
+
+
+
 
