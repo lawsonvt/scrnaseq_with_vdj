@@ -42,7 +42,11 @@ micro_markers <- list(Homeostatic=c("P2ry12",
                       "Cross presenting"=c("Wdfy3",
                                            "Wdfy4",
                                            "Sec22b",
-                                           "Cd68"))
+                                           "Cd68"),
+                      "BAM"=c("Lyve1", 
+                              "P2rx7", 
+                              "Mrc1", 
+                              "Siglec1"))
 
 # read in integrated seurat
 seu_subset <- LoadSeuratRds("results/seurat_cluster_microglia_subset/microglia_subset_seurat.RDS")
@@ -72,7 +76,7 @@ dotplot_list <- lapply(names(micro_markers), function(cluster_name) {
 })
 
 plot_grid(plotlist = dotplot_list, nrow = 1)
-ggsave(paste0(out_dir, "microglia_dotplots.png"), width=18, height=7, bg="white")
+ggsave(paste0(out_dir, "microglia_dotplots.png"), width=19, height=7, bg="white")
 
 DimPlot(seu_subset, reduction="umap.microglia_pca", group.by= "microglia_clusters", label=T,
         raster = T) +
