@@ -189,7 +189,7 @@ ggplot(results_df,
                   max.overlaps = 50) +
   theme_bw() +
   labs(x="Log2 Fold Change", y="-log(P-Value)", title="PS19-KO - PS19-WT")
-ggsave(paste0(out_dir, "ps19ko_minus_ps19wt.volcano_plots.png"), width=6, height=6)
+ggsave(paste0(out_dir, "ps19ko_minus_ps19wt.volcano_plots.png"), width=8, height=6)
 
 
 

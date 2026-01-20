@@ -88,7 +88,11 @@ saveRDS(gsea_results, file=paste0(results_dir, "total.gsea_results.RDS"))
 
 # output to excel files
 
-for (cell in names(gsea_results)) {
+cell_subset <- c("CD8p",
+                 "CD4p",
+                 'T Cell')
+
+for (cell in cell_subset) {
   
   cell_results <- gsea_results[[cell]]$gsea_results
   
