@@ -156,6 +156,8 @@ tcell_metadata_c <- tcell_metadata[!is.na(tcell_metadata$CTnt),]
 table(total_metadata_c$cell_cluster)
 table(tcell_metadata_c$tcell_type)
 
+table(tcell_metadata$tcell_type)
+
 # breakdown the counts
 total_counts <- as.data.frame(table(total_metadata_c$cell_cluster))
 total_counts <- total_counts[order(total_counts$Freq, decreasing=T),]

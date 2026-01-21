@@ -97,6 +97,47 @@ sig_ig <- cluster7_markers[cluster7_markers$p_val_adj < 0.01 &
 VlnPlot(tcell_seu, features = sig_ig$gene, ncol=2, raster=F, alpha=0.2)
 ggsave(paste0(out_dir, "cluster7_igmarkers.png"), width=10, height=8)
 
+# do the same for clusters 2 and 11
+cluster2_11_markers <- FindMarkers(tcell_seu,
+                                ident.1 = c("2","11"),
+                                test.use="MAST")
+cluster2_11_markers$gene <- rownames(cluster2_11_markers)
+
+cluster2_11_markers$pct_delta <- cluster2_11_markers$pct.1 -
+  cluster2_11_markers$pct.2
+
+DotPlot(tcell_seu, features = cluster2_11_markers[cluster2_11_markers$pct_delta > 0.5,]$gene) +
+  RotatedAxis() + labs(x=NULL, y=NULL) +
+  theme(legend.position="none")
+
+# split em up to find consistency
+cluster2_markers <- FindMarkers(tcell_seu,
+                                   ident.1 = "2",
+                                   test.use="MAST")
+cluster2_markers$gene <- rownames(cluster2_markers)
+cluster2_markers$pct_delta <- cluster2_markers$pct.1 -
+  cluster2_markers$pct.2
+
+cluster11_markers <- FindMarkers(tcell_seu,
+                                   ident.1 = "11" ,
+                                   test.use="MAST")
+cluster11_markers$gene <- rownames(cluster11_markers)
+cluster11_markers$pct_delta <- cluster11_markers$pct.1 -
+  cluster11_markers$pct.2
+
+# merge em
+cluster_2_11_merged <- merge(cluster2_markers,
+                             cluster11_markers,
+                             by="gene",
+                             suffixes=c("_2", "_11"))
+
+markers_2_11 <- cluster_2_11_merged[cluster_2_11_merged$pct_delta_2 > 0.4 |
+                      cluster_2_11_merged$pct_delta_11 > 0.4,]$gene
+
+DotPlot(tcell_seu, features = markers_2_11) +
+  RotatedAxis() + labs(x=NULL, y=NULL) +
+  theme(legend.position="none")
+ggsave(paste0(out_dir, "cluster_2_11.potential_markers.png"), width=8, height=5, bg="white")
 
 # see what other cell types clusters 2 and 11 can be
 lab_cluster_markers <- list("B Cells"=c("Cd19", "Cd79a", "Ms4a1"),
