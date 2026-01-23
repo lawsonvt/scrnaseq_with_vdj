@@ -48,6 +48,15 @@ micro_markers <- list(Homeostatic=c("P2ry12",
                               "Mrc1", 
                               "Siglec1"))
 
+lab_cluster_markers <- list("B Cells"=c("Cd19", "Cd79a", "Ms4a1"),
+                            "Monocytes"=c("Ccr2", "Cd44"),
+                            "Neutrophils"=c("Ly6g", "Ngp", "Mmp8"),
+                            "Macrophages"=c("Pf4", "Mrc1", "Ms4a7"),
+                            "T Cells"=c("Trbc2", "Cd3d", "Lck"),
+                            "Microglia"=c("Sall1", "Hexb", "P2ry12"),
+                            "Proliferating Cells"=c("Mki67", "Ccnb1", "Tpx2"),
+                            "Pericytes"=c("Pdgfrb", "Rgs5"))
+
 # read in integrated seurat
 seu_subset <- LoadSeuratRds("results/seurat_cluster_microglia_subset/microglia_subset_seurat.RDS")
 
@@ -66,6 +75,19 @@ cell_meta <- seu_subset@meta.data
 clusters <- sort(unique(cell_meta[cell_meta$cell_cluster == "Microglia",]$microglia_clusters))
 
 # cow dot plot for the markers
+dotplot_list <- lapply(names(lab_cluster_markers), function(cluster_name) {
+  
+  markers <- lab_cluster_markers[[cluster_name]]
+  
+  DotPlot(seu_subset, features = markers, idents=clusters) + RotatedAxis() + labs(x=NULL, y=NULL, title=cluster_name) +
+    theme(legend.position="none")
+  
+})
+
+plot_grid(plotlist = dotplot_list, nrow = 1)
+ggsave(paste0(out_dir, "lab_cluster_marker_dotplots.png"), width=19, height=7, bg="white")
+
+# dot plot for the other markers
 dotplot_list <- lapply(names(micro_markers), function(cluster_name) {
   
   markers <- micro_markers[[cluster_name]]
@@ -76,14 +98,95 @@ dotplot_list <- lapply(names(micro_markers), function(cluster_name) {
 })
 
 plot_grid(plotlist = dotplot_list, nrow = 1)
-ggsave(paste0(out_dir, "microglia_dotplots.png"), width=19, height=7, bg="white")
 
 DimPlot(seu_subset, reduction="umap.microglia_pca", group.by= "microglia_clusters", label=T,
         raster = T) +
   labs(x="UMAP 1", y="UMAP 2")
 
-# attempt at naming them
 
+# find some markers
+
+# possible grouping 5 and 14
+clusters <- unique(Idents(seu_subset))
+
+table(Idents(seu_subset))
+
+# subsample
+
+set.seed(42)
+
+sampled_cells <- sample(colnames(seu_subset), size=12000, replace = F)
+
+seu_subset_sub <- subset(seu_subset, cells=sampled_cells)
+
+cluster5_markers <- FindMarkers(seu_subset_sub,
+                                ident.1 = "5",
+                                ident.2 = clusters[!clusters %in% c("5","14")],
+                                test.use="MAST")
+cluster5_markers$gene <- rownames(cluster5_markers)
+cluster5_markers$pct_delta <- cluster5_markers$pct.1 -
+  cluster5_markers$pct.2
+
+cluster14_markers <- FindMarkers(seu_subset_sub,
+                                ident.1 = "14" ,
+                                ident.2 = clusters[!clusters %in% c("5","14")],
+                                test.use="MAST")
+cluster14_markers$gene <- rownames(cluster14_markers)
+cluster14_markers$pct_delta <- cluster14_markers$pct.1 -
+  cluster14_markers$pct.2
+
+cluster_5_14_merged <- merge(cluster5_markers,
+                             cluster14_markers,
+                             by="gene",
+                             suffixes=c("_5","_14"))
+
+markers_5_14 <- cluster_5_14_merged[cluster_5_14_merged$pct_delta_5 > 0.3 &
+                                      cluster_5_14_merged$pct_delta_14 > 0.3,]
+
+
+DotPlot(seu_subset, features = markers_5_14$gene, idents=clusters) + RotatedAxis() + 
+  labs(x=NULL, y=NULL, title="Clusters 5,4,12 markers") +
+  theme(legend.position="none")
+
+cluster_group <- c("1","16","13","2")
+
+cluster1_markers <- FindMarkers(seu_subset_sub,
+                                ident.1 = "1",
+                                ident.2 = clusters[!clusters %in% cluster_group],
+                                test.use="MAST")
+cluster1_markers$gene <- rownames(cluster1_markers)
+cluster1_markers$pct_delta <- cluster1_markers$pct.1 -
+  cluster1_markers$pct.2
+
+cluster16_markers <- FindMarkers(seu_subset_sub,
+                                ident.1 = "16",
+                                ident.2 = clusters[!clusters %in% cluster_group],
+                                test.use="MAST")
+cluster16_markers$gene <- rownames(cluster16_markers)
+cluster16_markers$pct_delta <- cluster16_markers$pct.1 -
+  cluster16_markers$pct.2
+
+# # try this again, with the other uncategorized
+# cluster_group <- c("1","16","13","2")
+# 
+# cluster_group_markers <- lapply(cluster_group, function(cluster) {
+#   
+#   print(cluster)
+#   
+#   cluster_markers <- FindMarkers(seu_subset_sub,
+#                                   ident.1 = cluster,
+#                                   ident.2 = clusters[!clusters %in% cluster_group],
+#                                 test.use="MAST")
+#   cluster_markers$gene <- rownames(cluster_markers)
+#   cluster_markers$pct_delta <- cluster_markers$pct.1 -
+#     cluster_markers$pct.2
+#   cluster_markers$cluster <- cluster
+#   
+#   return(cluster_markers)
+# })
+# names(cluster_group_markers) <- cluster_group
+
+# attempt at naming them
 cluster_xref <- data.frame(microglia_clusters=clusters,
                            microglia_cell_name=c("Homeostatic",
                                                  "Microglia",
