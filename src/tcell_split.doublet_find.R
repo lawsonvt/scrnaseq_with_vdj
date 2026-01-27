@@ -281,5 +281,6 @@ ggsave(paste0(out_dir, "cluster_names.dot_plot.png"), width=11, height=8, bg="wh
 # save Seurat object
 SaveSeuratRds(tcell_seu, paste0(out_dir, "tcell_subset.named.seurat.RDS"))
 
+tcell_seu <- LoadSeuratRds(paste0(out_dir, "tcell_subset.named.seurat.RDS"))
 
-
+saveRDS(tcell_seu@meta.data, file=paste0(out_dir, "tcell_subset.named.metadata.RDS"))
