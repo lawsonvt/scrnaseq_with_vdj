@@ -3,7 +3,7 @@ library(SeuratObject)
 library(CellChat)
 library(snakecase)
 
-out_dir <- "results/cellchat_ps19wt/"
+out_dir <- "results/cellchat_ps19ko/"
 
 dir.create(out_dir, showWarnings = F)
 
@@ -15,7 +15,7 @@ unique(total_seu$orig.ident)
 total_seu@meta.data$condition <- gsub("^[A-H]+\\-[A-Z0-9]+\\-", "", total_seu$orig.ident)
 
 # subset the one we want
-subset_seu <- subset(total_seu, subset = condition == "PS19-WT")
+subset_seu <- subset(total_seu, subset = condition == "PS19-KO")
 
 # drop total seurat object
 rm(total_seu)
@@ -29,7 +29,6 @@ subset_seu$merged_cell_name <- gsub("^Microglia$", "Unknown Microglia", subset_s
 
 # prepare the cellchat object
 Idents(subset_seu) <- "merged_cell_name"
-subset_seu@meta.data$samples <- subset_seu@meta.data$orig.ident
 
 # reorder the cell clusters
 Idents(subset_seu) <- factor(as.character(Idents(subset_seu)),
@@ -128,7 +127,7 @@ for (pathway in sig_pathways) {
   
   pdf(paste0(pathway_dir, pathway, ".chord_plot.pdf"), width=8, height=7)
   netVisual_aggregate(cellChat, signaling = pathway, 
-                      layout = "chord", vertex.weight = NULL)
+                      layout = "chord")
   dev.off()
   
   pdf(paste0(pathway_dir, pathway, ".heatmap_plot.pdf"), width=8, height=7)
@@ -148,14 +147,10 @@ for (pathway in sig_pathways) {
   
   pdf(paste0(pathway_dir, pathway, ".signaling_heatmap_plot.pdf"), width=8, height=7)
   print(netAnalysis_signalingRole_network(cellChat, 
-                                  signaling = pathway, 
-                                  width = 10, height = 4.5, font.size = 10))
+                                          signaling = pathway, 
+                                          width = 10, height = 4.5, font.size = 10))
   dev.off()
 }
-
-
-
-netAnalysis_signalingRole_scatter(cellChat)
 
 
 # save the cell chat object
