@@ -48,6 +48,8 @@ merged_meta[is.na(merged_meta$tcell_type) &
 
 init_seu@meta.data$tcell_doublet <- merged_meta$tcell_doublet
 
+init_seu <- subset(init_seu, subset = tcell_doublet == "singlet")
+
 # create a merged cell name
 merged_meta$merged_cell_name <- merged_meta$cell_cluster
 
