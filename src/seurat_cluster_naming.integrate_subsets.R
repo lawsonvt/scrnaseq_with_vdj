@@ -50,6 +50,8 @@ init_seu@meta.data$tcell_doublet <- merged_meta$tcell_doublet
 
 init_seu <- subset(init_seu, subset = tcell_doublet == "singlet")
 
+merged_meta <- merged_meta[colnames(init_seu),]
+
 # create a merged cell name
 merged_meta$merged_cell_name <- merged_meta$cell_cluster
 
