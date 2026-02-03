@@ -121,16 +121,16 @@ seu_subset_sub <- subset(seu_subset, cells=sampled_cells)
 
 cluster5_markers <- FindMarkers(seu_subset_sub,
                                 ident.1 = "5",
-                                ident.2 = clusters[!clusters %in% c("5","14")],
-                                test.use="MAST")
+                                ident.2 = clusters[!clusters %in% c("5","14","12")],
+                                test.use="wilcox")
 cluster5_markers$gene <- rownames(cluster5_markers)
 cluster5_markers$pct_delta <- cluster5_markers$pct.1 -
   cluster5_markers$pct.2
 
 cluster14_markers <- FindMarkers(seu_subset_sub,
                                 ident.1 = "14" ,
-                                ident.2 = clusters[!clusters %in% c("5","14")],
-                                test.use="MAST")
+                                ident.2 = clusters[!clusters %in% c("5","14","12")],
+                                test.use="wilcox")
 cluster14_markers$gene <- rownames(cluster14_markers)
 cluster14_markers$pct_delta <- cluster14_markers$pct.1 -
   cluster14_markers$pct.2
@@ -140,13 +140,14 @@ cluster_5_14_merged <- merge(cluster5_markers,
                              by="gene",
                              suffixes=c("_5","_14"))
 
-markers_5_14 <- cluster_5_14_merged[cluster_5_14_merged$pct_delta_5 > 0.3 &
-                                      cluster_5_14_merged$pct_delta_14 > 0.3,]
+markers_5_14 <- cluster_5_14_merged[cluster_5_14_merged$pct_delta_5 > 0.25 &
+                                      cluster_5_14_merged$pct_delta_14 > 0.25,]
 
 
 DotPlot(seu_subset, features = markers_5_14$gene, idents=clusters) + RotatedAxis() + 
-  labs(x=NULL, y=NULL, title="Clusters 5,4,12 markers") +
+  labs(x=NULL, y=NULL, title="Clusters 5,14,12 markers") +
   theme(legend.position="none")
+ggsave(paste(out_dir, "cluster_5_14_12_markers.png"), width=8, height=6, bg="white")
 
 
 # cluster_group <- c("1","16","13","2")
