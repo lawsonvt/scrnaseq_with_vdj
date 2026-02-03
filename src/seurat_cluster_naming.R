@@ -49,6 +49,28 @@ dotplot_list <- lapply(names(lab_cluster_markers), function(cluster_name) {
 plot_grid(plotlist = dotplot_list, nrow = 1)
 ggsave(paste0(out_dir, "total_dotplots.png"), width=18, height=7, bg="white")
 
+# The pericytes results are misleading, as they are from just a fraction of the cells
+
+DotPlot(int_seu, features=lab_cluster_markers$Pericytes) + 
+  RotatedAxis() + labs(x=NULL, y=NULL, title="Pericytes")
+ggsave(paste0(out_dir, "pericytes_markers.png"), width=4, height=7, bg="white")
+
+# pull out cluster 22 markers
+cluster22_markers <- readRDS("results/cluster_marker_tests/cluster22_degs.wilcox.RDS")
+cluster22_markers$gene <- rownames(cluster22_markers)
+
+cluster22_markers$delta_pct <- cluster22_markers$pct.1 - cluster22_markers$pct.2
+
+cluster22_markers <- cluster22_markers[order(cluster22_markers$delta_pct,
+                                             decreasing = T),]
+
+c22 <- cluster22_markers[cluster22_markers$delta_pct > 0.45,]$gene
+
+DotPlot(int_seu, 
+        features = c22)
+ggsave(paste0(out_dir, "cluster22_markers.dot_plot.png"), width=10, height=7, bg="white")
+
+
 # make a cross reference after looking over the dot plot
 
 harmony_clusters <- sort(unique(int_seu@meta.data$harmony_clusters))
