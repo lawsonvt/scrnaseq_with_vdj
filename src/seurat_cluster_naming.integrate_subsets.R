@@ -75,7 +75,7 @@ table(merged_meta$merged_cell_name)
 init_seu@meta.data$merged_cell_name <- merged_meta$merged_cell_name
 
 # filter out uknown and platelets
-init_seu <- subset(int_seu, subset = merged_cell_name == "Platelets" |
+init_seu <- subset(init_seu, subset = merged_cell_name == "Platelets" |
                      merged_cell_name == "Unknown", invert=T)
 
 SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.seurat.RDS"))
