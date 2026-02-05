@@ -81,6 +81,8 @@ tcell_seu <- RunUMAP(tcell_seu, dims = 1:max_pc_dim, reduction="pca", reduction.
 
 DimPlot(tcell_seu, reduction="umap.tcell_pca", group.by= c("orig.ident","tcell_clusters"))
 
+DimPlot(tcell_seu, reduction="umap.tcell_pca", group.by= c("cell_cluster","tcell_clusters"))
+
 # try different resolutions for clustering
 tcell_seu <- FindClusters(tcell_seu, resolution = c(0.3, 0.5, 0.8, 1.0, 1.2))
 
