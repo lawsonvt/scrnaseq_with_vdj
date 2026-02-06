@@ -150,6 +150,12 @@ DotPlot(seu_subset, features = markers_5_14$gene, idents=clusters) + RotatedAxis
 ggsave(paste(out_dir, "cluster_5_14_12_markers.png"), width=8, height=6, bg="white")
 
 
+# look at the DC genes
+dc_genes <- c("Xcr1", "Sirpa", "Il3ra", "Ccr7")
+
+DotPlot(seu_subset, features = dc_genes) + labs(x=NULL, y=NULL)
+ggsave(paste0(out_dir, "dotplot_for_dc_genes.microglia_subset_clusters.png"), width=7, height=5, bg="white")
+
 # cluster_group <- c("1","16","13","2")
 # 
 # cluster1_markers <- FindMarkers(seu_subset_sub,
@@ -332,4 +338,12 @@ ggplot(cell_meta,
 ggsave(paste0(out_dir, "microglia_subset.cluster_count.barplot.png"),
        width=8, height=4)
 
+
+Idents(seu_subset) <- "microglia_cell_name"
+
+# look at the DC genes
+dc_genes <- c("Xcr1", "Sirpa", "Il3ra", "Ccr7")
+
+DotPlot(seu_subset, features = dc_genes) + labs(x=NULL, y=NULL)
+ggsave(paste0(out_dir, "dotplot_for_dc_genes.microglia_subset_cells.png"), width=7, height=4, bg="white")
 

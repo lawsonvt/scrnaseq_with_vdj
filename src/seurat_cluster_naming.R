@@ -197,7 +197,17 @@ ggsave(paste0(out_dir, "non_microglia.cell_count.barplot.png"),
        width=6, height=4)
 
 
+# dot plot of DCs
+dc_genes <- c("Xcr1", "Sirpa", "Il3ra", "Ccr7")
 
+DotPlot(int_seu, 
+        features=dc_genes) + labs(x=NULL, y=NULL)
+ggsave(paste0(out_dir, "dotplot_for_dc_genes.png"), height=6, width=7, bg="white")
+
+Idents(int_seu) <- "cell_cluster"
+DotPlot(int_seu, 
+        features=dc_genes) + labs(x=NULL, y=NULL)
+ggsave(paste0(out_dir, "dotplot_for_dc_genes.cell_names.png"), height=4, width=7, bg="white")
 
 
 # save things
