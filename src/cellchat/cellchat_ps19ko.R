@@ -25,7 +25,7 @@ gc()
 subset_seu <- subset(subset_seu, subset = tcell_doublet == "singlet")
 
 # rename microglia
-subset_seu$merged_cell_name <- gsub("^Microglia$", "Unknown Microglia", subset_seu$merged_cell_name)
+subset_seu$merged_cell_name <- gsub("^Microglia$", "Intermediate Microglia", subset_seu$merged_cell_name)
 
 # prepare the cellchat object
 Idents(subset_seu) <- "merged_cell_name"
