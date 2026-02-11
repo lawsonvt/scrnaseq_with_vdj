@@ -85,6 +85,9 @@ ggsave(paste0(out_dir, "res_clustering.umaps.png"), width=13, height=8)
 DimPlot(peri_seu, reduction="umap.peri_pca", 
         group.by= res_cols[1], label = T)
 
+DimPlot(peri_seu, reduction="umap.peri_pca", 
+        group.by= res_cols[4], label = T)
+
 # cluster marker investigation
 
 Idents(peri_seu) <- "RNA_snn_res.0.3"
