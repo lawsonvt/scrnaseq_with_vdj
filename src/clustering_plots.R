@@ -161,6 +161,16 @@ ggplot(broad_cell_counts,
 ggsave(paste0(out_dir, "percentage_of_total_cells.bar_plot.png"),
        width=7, height=4)
 
+# pericytes counts
+
+ggplot(broad_cell_counts[broad_cell_counts$Var2 == "Pericytes",],
+       aes(y=frac, x=Var1)) +
+  geom_bar(stat="identity", color="black", fill="grey") +
+  #scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  labs(x=NULL, y="Percentage of Total Cells", fill=NULL, title="Pericytes")
+ggsave(paste0(out_dir, "percentage_of_pericytes.bar_plot.png"),
+       width=5, height=4)
 
 
 cd_cells <- subset(total_seu, subset = merged_cell_name == "CD4+" | merged_cell_name == "CD8+")
