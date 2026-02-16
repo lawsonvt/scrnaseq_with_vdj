@@ -24,6 +24,9 @@ gc()
 # clean up subset
 subset_seu <- subset(subset_seu, subset = tcell_doublet == "singlet")
 
+# drop pericytes (too few)
+subset_seu <- subset(subset_seu, subset = merged_cell_name != "Pericytes")
+
 # rename microglia
 subset_seu$merged_cell_name <- gsub("^Microglia$", "Intermediate Microglia", subset_seu$merged_cell_name)
 

@@ -1,12 +1,14 @@
 library(CellChat)
 library(snakecase)
+library(ggplot2)
+library(ggalluvial)
 
-out_dir <- "results/cellchat_comp_ps19ko_ps19wt/"
+out_dir <- "results/cellchat_comp_ps19ko_ps19wt.merged_microglia/"
 dir.create(out_dir, showWarnings = F)
 
 # load in cell chat data
-cc_ps19ko <- readRDS("results/cellchat_ps19ko/cell_chat_object.RDS")
-cc_ps19wt <- readRDS("results/cellchat_ps19wt/cell_chat_object.RDS")
+cc_ps19ko <- readRDS("results/cellchat_ps19ko.merged_microglia/cell_chat_object.RDS")
+cc_ps19wt <- readRDS("results/cellchat_ps19wt.merged_microglia/cell_chat_object.RDS")
 
 # merge em up
 cc_list <- list("PS19-WT"=cc_ps19wt,
@@ -91,6 +93,7 @@ for (cell in cells) {
 # 
 # cellChat <- netEmbedding(cellChat, type = "functional")
 # 
+
 
 # information flow 
 gg1 <- rankNet(cellChat, mode = "comparison", measure = "weight", 
