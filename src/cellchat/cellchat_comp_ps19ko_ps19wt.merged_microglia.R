@@ -109,4 +109,9 @@ gg1 + gg2
 ggsave(paste0(out_dir, "pathway_information_flow_comp.png"), width=10, height=8)
 
 
+data <- rankNet(cellChat, mode = "comparison", measure = "weight", 
+        sources.use = NULL, targets.use = NULL, 
+        stacked = F, do.stat = TRUE, return.data = T)
+
+data <- data$signaling.contribution
 
