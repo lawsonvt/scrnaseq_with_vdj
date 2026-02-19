@@ -258,13 +258,13 @@ ggplot(deg_counts,
 ggsave(paste0(out_dir, "ps19ko_minus_ps19wt.deg_counts.png"), width=8, height=5)
 
 # volcano plots
-results_df$log_p <- -log(results_df$pvalue)
+results_df$log_p <- -log10(results_df$pvalue)
 
 sig_results_df <- results_df[results_df$padj < 0.05,]
 
 logp_threshs <- data.frame(cell_type=unique(sig_results_df$cell_type),
                            thresh=sapply(unique(sig_results_df$cell_type), function(cell) {
-                             -log(max(sig_results_df[sig_results_df$cell_type == cell,]$pvalue))
+                             -log10(max(sig_results_df[sig_results_df$cell_type == cell,]$pvalue))
                            }))
 
 ggplot(results_df,
@@ -282,7 +282,7 @@ ggplot(results_df,
   #                 color="red", size=2.5,
   #                 max.overlaps = 50) +
   theme_bw() +
-  labs(x="Log2 Fold Change", y="-log(P-Value)", title="PS19-KO - PS19-WT")
+  labs(x="Log2 Fold Change", y="-log10(P-Value)", title="PS19-KO - PS19-WT")
 ggsave(paste0(out_dir, "ps19ko_minus_ps19wt.volcano_plots.png"), width=16, height=10)
 
 # volcano plots per comparison
@@ -299,7 +299,7 @@ for (cell in names(ps19ko_minus_ps19wt.de_results)) {
   
   subset <- ps19ko_minus_ps19wt.de_results[[cell]]
   
-  subset$log_p <- -log(subset$pvalue)
+  subset$log_p <- -log10(subset$pvalue)
   
   subset_sig <- subset[subset$padj < 0.05 &
                        abs(subset$log2FoldChange) > 0.5,]
@@ -329,7 +329,7 @@ for (cell in names(ps19ko_minus_ps19wt.de_results)) {
                      color="red", size=2.5,
                      max.overlaps = 50) +
     theme_bw() +
-    labs(x="Log2 Fold Change", y="-log(P-Value)", title=cell,
+    labs(x="Log2 Fold Change", y="-log10(P-Value)", title=cell,
          subtitle="PS19-KO - PS19-WT")
   ggsave(paste0(volcano_dir, to_snake_case(cell), ".volcano_plot.png"), width=5, height=6)
   
