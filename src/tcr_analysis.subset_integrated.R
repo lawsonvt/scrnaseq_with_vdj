@@ -184,7 +184,8 @@ ggsave(paste0(out_dir, "clonal_size.seurat_umap.png"), width=12, height=4)
 # meta with contigs
 total_meta_contigs <- total_meta[!is.na(total_meta$cloneSize),]
 
-
+# save some things
+saveRDS(combined_tcr, file=paste0(out_dir, "combined_tcr.RDS"))
 
 
 # subset down to T-Cells
