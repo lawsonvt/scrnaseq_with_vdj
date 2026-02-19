@@ -268,7 +268,7 @@ write.xlsx(cluster_xref, file=paste0(out_dir, "microglia_subcluster_celltypes.xl
 
 
 
-#SaveSeuratRds(seu_subset, file=paste0(out_dir, "cell_named.microglia_subset.seurat.RDS"))
+SaveSeuratRds(seu_subset, file=paste0(out_dir, "cell_named.microglia_subset.seurat.RDS"))
 
 #seu_subset <- LoadSeuratRds(file=paste0(out_dir, "cell_named.microglia_subset.seurat.RDS"))
 
