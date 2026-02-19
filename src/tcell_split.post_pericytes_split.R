@@ -378,12 +378,12 @@ tcell_clusters <- data.frame(RNA_snn_res.0.5=sort(unique(tcell_meta$RNA_snn_res.
                              tcell_sub_cell_name=c("CD8+",
                                                    "CD4+",
                                                    "Unknown2",
-                                                   "Microglia",
+                                                   "Microglia Assoc.",
                                                    "Naive T Cells",
                                                    "Natural Killer",
                                                    "Natural Killer",
                                                    "B Cells",
-                                                   "CD8+"))
+                                                   "Proliferating CD8+"))
 
 
 tcell_meta <- merge(tcell_meta,
@@ -658,10 +658,12 @@ for (cell in names(ps19ko_minus_ps19wt.de_results)) {
   
 }
 
-# make a plot of just CD8+ / CD4+
+# make a plot of just CD8+ / CD4+ / Naive T Cells / Proliferating CD8+
 
 cd_seu <- subset(tcell_seu, subset = tcell_sub_cell_name == "CD8p" |
-                   tcell_sub_cell_name == "CD4p")
+                   tcell_sub_cell_name == "CD4p" |
+                   tcell_sub_cell_name == "Naive T Cells" |
+                 tcell_sub_cell_name == "Proliferating CD8p")
 
 cd_seu$tcell_sub_cell_name <- gsub("p", "+", cd_seu$tcell_sub_cell_name)
 
@@ -669,14 +671,14 @@ DimPlot(cd_seu, reduction="umap.tcell_pca",
         group.by= c("tcell_sub_cell_name"),
         label = T) + theme(legend.position = "None") +
   labs(x="UMAP 1", y="UMAP 2", title=NULL) 
-ggsave(paste0(out_dir, "cd4_cd8.umap.png"), width=5, height=4)
+ggsave(paste0(out_dir, "tcell.umap.png"), width=5, height=4)
 
 DimPlot(cd_seu, reduction="umap.tcell_pca", 
         group.by= c("tcell_sub_cell_name"),
         split.by="condition",
         label = T, ncol=2) + theme(legend.position = "None") +
   labs(x="UMAP 1", y="UMAP 2", title=NULL) 
-ggsave(paste0(out_dir, "cd4_cd8.umap.per_condition.png"), width=6, height=5)
+ggsave(paste0(out_dir, "tcell.umap.per_condition.png"), width=6, height=5)
 
 
 DimPlot(cd_seu, reduction="umap.tcell_pca", 
@@ -684,11 +686,15 @@ DimPlot(cd_seu, reduction="umap.tcell_pca",
         split.by="condition",
         ncol=2) +scale_color_manual(values=rev(colorblind_vector[c(1,3,4,5,7)])) +
   labs(x="UMAP 1", y="UMAP 2", title=NULL) 
-ggsave(paste0(out_dir, "cd4_cd8.umap.clonal_size.per_condition.png"), width=7, height=5)
+ggsave(paste0(out_dir, "tcell.umap.clonal_size.per_condition.png"), width=7, height=5)
 
 
+# save data
+tcell_seu$tcell_sub_cell_name <- gsub("p$", "+", tcell_seu$tcell_sub_cell_name)
 
 
+SaveSeuratRds(tcell_seu, file=paste0(out_dir, "tcell_cell_named.seurat.RDS"))
+saveRDS(tcell_seu@meta.data, file=paste0(out_dir, "tcell_cell_named.metadata.RDS"))
 
 
 
