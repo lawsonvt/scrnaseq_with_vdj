@@ -79,13 +79,13 @@ dotplot_list <- lapply(names(lab_cluster_markers), function(cluster_name) {
   
   markers <- lab_cluster_markers[[cluster_name]]
   
-  DotPlot(seu_subset, features = markers, idents=clusters) + RotatedAxis() + labs(x=NULL, y=NULL, title=cluster_name) +
-    theme(legend.position="none")
+  DotPlot(seu_subset, features = markers, idents=clusters) + RotatedAxis() + labs(x=NULL, y=NULL, title=cluster_name) 
   
 })
 
-plot_grid(plotlist = dotplot_list, nrow = 1)
-ggsave(paste0(out_dir, "lab_cluster_marker_dotplots.png"), width=19, height=7, bg="white")
+plot_grid(plotlist = dotplot_list, nrow = 3)
+
+ggsave(paste0(out_dir, "lab_cluster_marker_dotplots.png"), width=16, height=12, bg="white")
 
 # dot plot for the other markers
 dotplot_list <- lapply(names(micro_markers), function(cluster_name) {
@@ -97,7 +97,8 @@ dotplot_list <- lapply(names(micro_markers), function(cluster_name) {
   
 })
 
-plot_grid(plotlist = dotplot_list, nrow = 1)
+plot_grid(plotlist = dotplot_list, nrow = 3)
+ggsave(paste0(out_dir, "microglia_marker_dotplots.png"), width=16, height=12, bg="white")
 
 DimPlot(seu_subset, reduction="umap.microglia_pca", group.by= "microglia_clusters", label=T,
         raster = T) +
@@ -210,23 +211,23 @@ DotPlot(seu_subset, features = markers, idents=clusters) + RotatedAxis()
 
 
 # attempt at naming them
-cluster_xref <- data.frame(microglia_clusters=clusters,
+cluster_xref <- data.frame(microglia_clusters=sort(clusters),
                            microglia_cell_name=c("Homeostatic",
                                                  "Microglia",
                                                  "Microglia",
                                                  "Homeostatic",
                                                  "Homeostatic",
-                                                 "Cross Presenting",
+                                                 "MG Unknown",
                                                  "Homeostatic",
                                                  "DAM",
                                                  "DAM",
                                                  "Homeostatic",
                                                  "Homeostatic",
                                                  "Interferon Responsive",
-                                                 "Cross Presenting",
+                                                 "MG Unknown",
                                                  "Microglia",
-                                                 "Cross Presenting",
-                                                 "Inflammatory",
+                                                 "MG Unknown",
+                                                 "Homeostatic",
                                                  "Microglia"))
 
 # merge this into the metadata
@@ -269,11 +270,21 @@ write.xlsx(cluster_xref, file=paste0(out_dir, "microglia_subcluster_celltypes.xl
 
 #SaveSeuratRds(seu_subset, file=paste0(out_dir, "cell_named.microglia_subset.seurat.RDS"))
 
-seu_subset <- LoadSeuratRds(file=paste0(out_dir, "cell_named.microglia_subset.seurat.RDS"))
+#seu_subset <- LoadSeuratRds(file=paste0(out_dir, "cell_named.microglia_subset.seurat.RDS"))
 
 saveRDS(seu_subset@meta.data, file=paste0(out_dir, "cell_named.microglia_subset.cell_metadata.RDS"))
 
 # some basic breakdowns
+
+# remove unknown ones
+metadata <- seu_subset@meta.data
+metadata$cell_id <- rownames(metadata)
+
+mg_cells <- metadata[metadata$microglia_cell_name != "MG Unknown",]$cell_id
+
+
+# seu_subset <- subset(seu_subset, cells = mg_cells)
+
 
 sample_ids <- unique(sort(cell_meta$orig.ident))
 
