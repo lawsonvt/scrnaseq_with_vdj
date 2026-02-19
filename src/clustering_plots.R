@@ -72,14 +72,14 @@ DimPlot(total_seu, reduction="umap.harmony",
         group.by= "broad_cell_name") +
   labs(x="UMAP 1", y="UMAP 2", title=NULL)
 ggsave(paste0(out_dir, "total_broad_clusters.all_samples_umap.png"),
-       width=8, height=6)
+       width=6, height=4)
 
 DimPlot(total_seu, reduction="umap.harmony", 
         group.by= "merged_cell_name", 
         cols=merged_cell_colors) +
   labs(x="UMAP 1", y="UMAP 2", title=NULL)
 ggsave(paste0(out_dir, "subset_clusters.all_samples_umap.png"),
-       width=8, height=6)
+       width=6, height=4)
 
 # make a dot plot for the broad categories
 
@@ -140,7 +140,7 @@ ggplot(microglia_subset_counts,
   theme_bw() +
   labs(y=NULL, x="Percentage of Microglia Cells", fill=NULL)
 ggsave(paste0(out_dir, "percentage_of_microglia_cells.bar_plot.png"),
-       width=7, height=4)
+       width=5, height=3)
 
 broad_cell_counts <- as.data.frame(table(metadata$condition,
                                          metadata$broad_cell_name))
@@ -159,7 +159,7 @@ ggplot(broad_cell_counts,
   theme_bw() +
   labs(y=NULL, x="Percentage of Total Cells", fill=NULL)
 ggsave(paste0(out_dir, "percentage_of_total_cells.bar_plot.png"),
-       width=7, height=4)
+       width=5, height=3)
 
 # pericytes counts
 
