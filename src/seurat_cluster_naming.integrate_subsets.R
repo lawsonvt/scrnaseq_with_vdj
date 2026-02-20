@@ -9,8 +9,20 @@ init_seu <- LoadSeuratRds("results/seurat_cluster_naming/cell_named.seurat.RDS")
 
 # load in the metadata from the other subsets
 mg_meta <- readRDS("results/seurat_cluster_naming.microglia_subset/cell_named.microglia_subset.cell_metadata.RDS")
-tc_meta <- readRDS("results/tcell_split.doublet_find/tcell_subset.named.metadata.RDS")
+
 peri_meta <- readRDS("results/pericytes_split/pericytes_subset.named.metadata.RDS")
+
+peri_meta$pericyte_type <- gsub("^NK$", "Natural Killer", peri_meta$pericyte_type)
+peri_meta$pericyte_type <- gsub("Unknown", "P Unknown", peri_meta$pericyte_type)
+
+tc_meta <- readRDS("results/tcell_split.post_pericytes_split/tcell_cell_named.metadata.RDS")
+
+tc_meta$tcell_sub_cell_name <- gsub("Unknown2", "T Unknown", tc_meta$tcell_sub_cell_name)
+
+# load in doublet metadata
+tc_doublets <- readRDS("results/tcell_split.post_pericytes_split/tcell.doublet_output.RDS")
+
+tc_doublet_ids <- rownames(tc_doublets[tc_doublets$scDblFinder.class == "doublet",])
 
 # merge up the metadata
 
@@ -29,40 +41,29 @@ merged_meta <- merge(total_meta,
                      by="cell_id")
 
 merged_meta <- merge(merged_meta,
-                     tc_meta[,c("cell_id", "tcell_type")],
+                     peri_meta[,c("cell_id", "pericyte_type")],
                      all.x=T,
                      by="cell_id")
 
 merged_meta <- merge(merged_meta,
-                     peri_meta[,c("cell_id", "pericyte_type")],
+                     tc_meta[,c("cell_id", "tcell_sub_cell_name")],
                      all.x=T,
                      by="cell_id")
+
+
 
 # make sure order is correct
 rownames(merged_meta) <- merged_meta$cell_id
 
 merged_meta <- merged_meta[colnames(init_seu),]
 
-# tcell doublets
-nrow(merged_meta[is.na(merged_meta$tcell_type) &
-              merged_meta$cell_cluster == "T Cells",])
 
-# drop doublets identified by T cell
-merged_meta$tcell_doublet <- "singlet"
-merged_meta[is.na(merged_meta$tcell_type) &
-              merged_meta$cell_cluster == "T Cells",]$tcell_doublet <- "doublet"
+# drop doublets
 
-init_seu@meta.data$tcell_doublet <- merged_meta$tcell_doublet
-
-init_seu <- subset(init_seu, subset = tcell_doublet == "singlet")
-
-merged_meta <- merged_meta[colnames(init_seu),]
+merged_meta <- merged_meta[!merged_meta$cell_id %in% tc_doublet_ids,]
 
 # create a merged cell name
 merged_meta$merged_cell_name <- merged_meta$cell_cluster
-
-merged_meta[!is.na(merged_meta$tcell_type),]$merged_cell_name <-
-  merged_meta[!is.na(merged_meta$tcell_type),]$tcell_type
 
 merged_meta[!is.na(merged_meta$microglia_cell_name),]$merged_cell_name <- 
   merged_meta[!is.na(merged_meta$microglia_cell_name),]$microglia_cell_name
@@ -70,15 +71,44 @@ merged_meta[!is.na(merged_meta$microglia_cell_name),]$merged_cell_name <-
 merged_meta[!is.na(merged_meta$pericyte_type),]$merged_cell_name <- 
   merged_meta[!is.na(merged_meta$pericyte_type),]$pericyte_type
 
+merged_meta[!is.na(merged_meta$tcell_sub_cell_name),]$merged_cell_name <-
+  merged_meta[!is.na(merged_meta$tcell_sub_cell_name),]$tcell_sub_cell_name
+
+
 table(merged_meta$merged_cell_name)
+
+# filter down seurat object
+init_seu <- subset(init_seu, cells = merged_meta$cell_id)
+
+merged_meta <- merged_meta[colnames(init_seu),]
 
 init_seu@meta.data$merged_cell_name <- merged_meta$merged_cell_name
 
-# filter out uknown and platelets
-init_seu <- subset(init_seu, subset = merged_cell_name == "Platelets" |
-                     merged_cell_name == "Unknown", invert=T)
+SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.full.seurat.RDS"))
 
-SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.seurat.RDS"))
+# remove unknown cells
+
+
+init_seu <- subset(init_seu, subset = merged_cell_name %in% c("P Unknown",
+                                                              "T Unknown",
+                                                              "MG Unknown"),
+                   invert=T)
+
+
+SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.no_unknown.seurat.RDS"))
+
+
+# remove low counts
+min_count <- 100
+
+cell_counts <- table(init_seu$merged_cell_name)
+
+names(cell_counts)[cell_counts >= min_count]
+
+# filter out unknown and platelets
+init_seu <- subset(init_seu, subset = merged_cell_name %in% names(cell_counts)[cell_counts >= min_count])
+
+SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.no_unknown_no_low_count.seurat.RDS"))
 
 
 
