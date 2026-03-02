@@ -169,7 +169,6 @@ DimPlot(tcell_seu, group.by = c("RNA_snn_res.0.5","cloneSize"), reduction = "uma
 
 # in between labels
 
-tcell_meta <- tcell_seu@meta.data
 
 # tcell_clusters <- data.frame(RNA_snn_res.0.5=sort(unique(tcell_meta$RNA_snn_res.0.5)),
 #                              init_cell_name=c("CD8+",
