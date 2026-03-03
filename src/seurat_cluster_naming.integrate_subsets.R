@@ -166,6 +166,7 @@ init_seu <- subset(init_seu, cells = merged_meta$cell_id)
 merged_meta <- merged_meta[colnames(init_seu),]
 
 init_seu@meta.data$merged_cell_name <- merged_meta$merged_cell_name
+init_seu@meta.data$cell_category <- merged_meta$cell_category
 
 SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.full.seurat.RDS"))
 
