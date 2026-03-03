@@ -8,68 +8,57 @@ out_dir <- "results/clustering_plots/"
 dir.create(out_dir, showWarnings = F)
 
 # load in seurat objects
-total_seu <- LoadSeuratRds("results/seurat_cluster_naming.integrate_subsets/subset_names_merged.seurat.RDS")
+total_seu <- LoadSeuratRds("results/seurat_cluster_naming.integrate_subsets/subset_names_merged.no_low_count.seurat.RDS")
 
 # fix name
-total_seu$merged_cell_name <- gsub("^Microglia$", "Intermediate Microglia", total_seu$merged_cell_name)
+#total_seu$merged_cell_name <- gsub("^Microglia$", "Intermediate Microglia", total_seu$merged_cell_name)
 total_seu$condition <- gsub("^[A-H]+\\-[A-Z0-9]+\\-", "", total_seu$orig.ident)
 
-
-# broad cell type name
-cluster_xref <- data.frame(merged_cell_name=c("Intermediate Microglia",
-                             "Cross Presenting",
-                             "Homeostatic",
-                             "Macrophages",
-                             "Monocytes",
-                             "Interferon Responsive",
-                             "Neutrophils",
-                             "DAM",
-                             "Proliferating Cells",
-                             "CD4+",
-                             "CD8+",
-                             "NK",
-                             "B Cells",
-                             "Pericytes",
-                             "Inflammatory"),
-                           broad_cell_name=c("Microglia",
-                             "Microglia",
-                             "Microglia",
-                             "Macrophages",
-                             "Monocytes",
-                             "Microglia",
-                             "Neutrophils",
-                             "Microglia",
-                             "Proliferating Cells",
-                             "T Cells",
-                             "T Cells",
-                             "T Cells",
-                             "B Cells",
-                             "Pericytes",
-                             "Microglia"))
-
 total_seu$condition <- factor(as.character(total_seu$condition),
-                      levels=c("WT", "KO", "PS19-WT", "PS19-KO"))
+                              levels=c("WT", "KO", "PS19-WT", "PS19-KO"))
+
+
+# # broad cell type name
+# cluster_xref <- data.frame(merged_cell_name=c("Intermediate Microglia",
+#                              "Cross Presenting",
+#                              "Homeostatic",
+#                              "Macrophages",
+#                              "Monocytes",
+#                              "Interferon Responsive",
+#                              "Neutrophils",
+#                              "DAM",
+#                              "Proliferating Cells",
+#                              "CD4+",
+#                              "CD8+",
+#                              "NK",
+#                              "B Cells",
+#                              "Pericytes",
+#                              "Inflammatory"),
+#                            broad_cell_name=c("Microglia",
+#                              "Microglia",
+#                              "Microglia",
+#                              "Macrophages",
+#                              "Monocytes",
+#                              "Microglia",
+#                              "Neutrophils",
+#                              "Microglia",
+#                              "Proliferating Cells",
+#                              "T Cells",
+#                              "T Cells",
+#                              "T Cells",
+#                              "B Cells",
+#                              "Pericytes",
+#                              "Microglia"))
 
 metadata <- total_seu@meta.data
 
 metadata$cell_id <- rownames(metadata)
 
-# merge in broad names
-metadata <- merge(metadata,
-                  cluster_xref,
-                  by="merged_cell_name")
-
-rownames(metadata) <- metadata$cell_id
-
-metadata <- metadata[colnames(total_seu),]
-
-total_seu$broad_cell_name <- metadata$broad_cell_name
-
 merged_cell_colors <- pal_d3("category20")(length(unique(total_seu$merged_cell_name)))
 
 
 DimPlot(total_seu, reduction="umap.harmony",
-        group.by= "broad_cell_name") +
+        group.by= "cell_category") +
   labs(x="UMAP 1", y="UMAP 2", title=NULL)
 ggsave(paste0(out_dir, "total_broad_clusters.all_samples_umap.png"),
        width=6, height=4)
@@ -92,18 +81,18 @@ lab_cluster_markers <- list("B Cells"=c("Cd19", "Cd79a", "Ms4a1"),
                             "Proliferating Cells"=c("Mki67", "Ccnb1", "Tpx2"),
                             "T Cells"=c("Trbc2", "Cd3d", "Lck"))
 
-lab_cluster_markers <- c("Cd79a","Pf4","Hexb","Ccr2","Mmp8","Rgs5","Mki67","Cd3d")
+lab_cluster_markers <- c("Cd79a","Pf4","P2ry12","Ccr2","Ncr1","Mmp8","Mki67","Cd3d")
 
-total_seu$broad_cell_name <- factor(total_seu$broad_cell_name,
-                                 levels=rev(sort(unique(total_seu$broad_cell_name))))
+total_seu$cell_category <- factor(total_seu$cell_category,
+                                 levels=rev(sort(unique(total_seu$cell_category))))
 
-Idents(total_seu) <- "broad_cell_name"
+Idents(total_seu) <- "cell_category"
 
 
 DotPlot(total_seu,
         features=lab_cluster_markers) +
-  labs(x=NULL, y=NULL)
-ggsave(paste0(out_dir, "broad_cluster_names.marker_dot_plot.png"), width=8, height=4,
+  labs(x=NULL, y=NULL) + RotatedAxis()
+ggsave(paste0(out_dir, "cell_category.marker_dot_plot.png"), width=6, height=3,
        bg="white")
 
 
@@ -120,18 +109,24 @@ ggsave(paste0(out_dir, "cell_types_per_condition.all_samples_umap.png"),
 
 # microglia subset counts
 
-metadata_mg <- metadata[metadata$broad_cell_name == "Microglia",]
+metadata_mg <- metadata[metadata$cell_category == "Microglia",]
 
 microglia_subset_counts <- as.data.frame(table(metadata_mg$condition,
                                         metadata_mg$merged_cell_name))
 
 microglia_counts <- as.data.frame(table(metadata_mg$condition))
 
-microglia_subset_counts <- merge(microglia_counts,
-                                 microglia_subset_counts,
+microglia_subset_counts <- merge(microglia_subset_counts,
+                                 microglia_counts,
                                  by="Var1")
-microglia_subset_counts$frac <- microglia_subset_counts$Freq.y / 
-  microglia_subset_counts$Freq.x * 100
+microglia_subset_counts$frac <- microglia_subset_counts$Freq.x / 
+  microglia_subset_counts$Freq.y * 100
+
+microglia_subset_counts <- microglia_subset_counts[order(microglia_subset_counts$frac,
+                                                         decreasing = T),]
+
+microglia_subset_counts$Var2 <- factor(microglia_subset_counts$Var2,
+                                       levels=unique(microglia_subset_counts$Var2))
 
 ggplot(microglia_subset_counts,
        aes(x=frac, y=Var1, fill=Var2)) +
@@ -142,8 +137,19 @@ ggplot(microglia_subset_counts,
 ggsave(paste0(out_dir, "percentage_of_microglia_cells.bar_plot.png"),
        width=5, height=3)
 
+ggplot(microglia_subset_counts,
+       aes(x=Var2, y=Freq.x, fill=Var1)) +
+  geom_bar(stat="identity", color="black", position="dodge") +
+  #scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=35, hjust=1)) +
+  labs(y="Cell Count", x=NULL, fill=NULL)
+ggsave(paste0(out_dir, "microglia_cell_counts.bar_plot.png"),
+       width=5, height=3)
+
+
 broad_cell_counts <- as.data.frame(table(metadata$condition,
-                                         metadata$broad_cell_name))
+                                         metadata$cell_category))
 total_counts <- as.data.frame(table(metadata$condition))
 
 broad_cell_counts <- merge(broad_cell_counts,
@@ -152,45 +158,106 @@ broad_cell_counts <- merge(broad_cell_counts,
 broad_cell_counts$frac <- broad_cell_counts$Freq.x / 
   broad_cell_counts$Freq.y * 100
 
+broad_cell_counts <- broad_cell_counts[order(broad_cell_counts$frac,
+                                             decreasing=T),]
+
+broad_cell_counts$Var2 <- factor(as.character(broad_cell_counts$Var2),
+                                 levels=unique(broad_cell_counts$Var2))
+
 ggplot(broad_cell_counts,
        aes(x=frac, y=Var1, fill=Var2)) +
   geom_bar(stat="identity", color="black") +
-  #scale_fill_brewer(palette = "Set2") +
+  scale_fill_brewer(palette = "Set1") +
   theme_bw() +
   labs(y=NULL, x="Percentage of Total Cells", fill=NULL)
 ggsave(paste0(out_dir, "percentage_of_total_cells.bar_plot.png"),
        width=5, height=3)
 
-# pericytes counts
-
-ggplot(broad_cell_counts[broad_cell_counts$Var2 == "Pericytes",],
-       aes(y=frac, x=Var1)) +
-  geom_bar(stat="identity", color="black", fill="grey") +
+ggplot(broad_cell_counts,
+       aes(x=Var2, y=Freq.x, fill=Var1)) +
+  geom_bar(stat="identity", color="black", position="dodge") +
   #scale_fill_brewer(palette = "Set2") +
   theme_bw() +
-  labs(x=NULL, y="Percentage of Total Cells", fill=NULL, title="Pericytes")
-ggsave(paste0(out_dir, "percentage_of_pericytes.bar_plot.png"),
-       width=5, height=4)
+  theme(axis.text.x = element_text(angle=35, hjust=1)) +
+  labs(y="Cell Count", x=NULL, fill=NULL)
+ggsave(paste0(out_dir, "total_cell_counts.bar_plot.png"),
+       width=5, height=3)
+
+# same percentage, this time without microglia
+broad_cell_counts <- as.data.frame(table(metadata[metadata$cell_category != "Microglia",]$condition,
+                                         metadata[metadata$cell_category != "Microglia",]$cell_category))
+total_counts <- as.data.frame(table(metadata[metadata$cell_category != "Microglia",]$condition))
+
+broad_cell_counts <- merge(broad_cell_counts,
+                           total_counts,
+                           by="Var1")
+broad_cell_counts$frac <- broad_cell_counts$Freq.x / 
+  broad_cell_counts$Freq.y * 100
+
+broad_cell_counts <- broad_cell_counts[order(broad_cell_counts$frac,
+                                             decreasing=T),]
+
+broad_cell_counts$Var2 <- factor(as.character(broad_cell_counts$Var2),
+                                 levels=unique(broad_cell_counts$Var2))
+
+ggplot(broad_cell_counts,
+       aes(x=frac, y=Var1, fill=Var2)) +
+  geom_bar(stat="identity", color="black") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_bw() +
+  labs(y=NULL, x="Percentage of Non-Microglia Cells", fill=NULL)
+ggsave(paste0(out_dir, "percentage_of_non_microglia_cells.bar_plot.png"),
+       width=5, height=3)
+
+ggplot(broad_cell_counts,
+       aes(x=Var2, y=Freq.x, fill=Var1)) +
+  geom_bar(stat="identity", color="black", position="dodge") +
+  #scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=35, hjust=1)) +
+  labs(y="Cell Count", x=NULL, fill=NULL)
+ggsave(paste0(out_dir, "non_microglia_cell_counts.bar_plot.png"),
+       width=5, height=3)
+
+# tcell breakdown
+t_cell_counts <- as.data.frame(table(metadata[metadata$cell_category == "T Cells",]$condition,
+                                     metadata[metadata$cell_category == "T Cells",]$merged_cell_name))
+total_counts <- as.data.frame(table(metadata[metadata$cell_category == "T Cells",]$condition))
+
+t_cell_counts <- merge(t_cell_counts,
+                           total_counts,
+                           by="Var1")
+t_cell_counts$frac <- t_cell_counts$Freq.x / 
+  t_cell_counts$Freq.y * 100
+
+t_cell_counts <- t_cell_counts[order(t_cell_counts$frac,
+                                             decreasing=T),]
+
+t_cell_counts$Var2 <- factor(as.character(t_cell_counts$Var2),
+                                 levels=unique(t_cell_counts$Var2))
 
 
-cd_cells <- subset(total_seu, subset = merged_cell_name == "CD4+" | merged_cell_name == "CD8+")
-# subset down to PS19 cells
-# ps19_seu <- subset(total_seu, subset = condition == "PS19-WT" |
-#                      condition == "PS19-KO")
+ggplot(t_cell_counts,
+       aes(x=frac, y=Var1, fill=Var2)) +
+  geom_bar(stat="identity", color="black") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_bw() +
+  labs(y=NULL, x="Percentage of T Cells", fill=NULL)
+ggsave(paste0(out_dir, "percentage_of_t_cells.bar_plot.png"),
+       width=5, height=3)
 
-# filter out weird outliers
-umap_coords <- Embeddings(cd_cells, reduction = "umap.harmony")
+ggplot(t_cell_counts,
+       aes(x=Var2, y=Freq.x, fill=Var1)) +
+  geom_bar(stat="identity", color="black", position="dodge") +
+  #scale_fill_brewer(palette = "Set2") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=35, hjust=1)) +
+  labs(y="Cell Count", x=NULL, fill=NULL)
+ggsave(paste0(out_dir, "t_cell_counts.bar_plot.png"),
+       width=5, height=3)
 
-keep_cells <- rownames(umap_coords)[
-  umap_coords[,1] < 2.5 & umap_coords[,1] > -5 &
-    umap_coords[,2] < -10
-]
 
-cd_cells <- subset(cd_cells, cells = keep_cells)
 
-DimPlot(cd_cells, reduction="umap.harmony", 
-        group.by= "merged_cell_name") +
-  labs(x="UMAP 1", y="UMAP 2", )
 
 
 
