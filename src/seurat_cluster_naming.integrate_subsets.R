@@ -195,8 +195,10 @@ init_seu <- subset(init_seu, subset = merged_cell_name %in% names(cell_counts)[c
 SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.no_low_count.seurat.RDS"))
 
 
+# filter down to just microglia
 
+init_seu <- subset(init_seu, subset = cell_category == "Microglia")
 
-
+SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.just_microglia.seurat.RDS"))
 
 
