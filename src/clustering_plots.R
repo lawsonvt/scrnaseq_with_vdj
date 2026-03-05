@@ -256,8 +256,3 @@ ggplot(t_cell_counts,
 ggsave(paste0(out_dir, "t_cell_counts.bar_plot.png"),
        width=5, height=3)
 
-
-
-
-
-
