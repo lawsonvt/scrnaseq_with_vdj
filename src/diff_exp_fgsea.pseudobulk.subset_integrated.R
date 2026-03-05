@@ -40,65 +40,68 @@ total_gene_sets <- list(hallmark=list_convert(hallmark_gene_sets),
 
 # can be changes in the future to account for multiple results
 
-results_file <- "results/diff_exp_analysis.pseudobulk.subset_integrated/ps19ko_minus_ps19wt.de_results.RDS"
+results_files <- c("results/diff_exp_analysis.pseudobulk.subset_integrated/ps19ko_minus_ps19wt.cell_types.de_results.RDS",
+                   "results/diff_exp_analysis.pseudobulk.subset_integrated/ps19ko_minus_ps19wt.cell_categories.de_results.RDS")
 
-results_list <- readRDS(results_file)
+for (results_file in results_files) {
 
-results_dir <- paste0(out_dir, gsub(".RDS", "", basename(results_file)), "/")
-
-dir.create(results_dir, showWarnings = F)
-
-# Calculate GSEA results per cell type -----------------------------------------
-
-gsea_results <- lapply(results_list, function(degs) {
+  results_list <- readRDS(results_file)
   
-  # Create ranked gene list (by log fold change or stat)
-  # Important: remove NAs and sort
-  ranked_genes <- degs %>%
-    filter(!is.na(stat) &
-             !is.infinite(stat)) %>%
-    arrange(desc(stat)) %>%
-    pull(stat, name = gene)
+  results_dir <- paste0(out_dir, gsub(".RDS", "", basename(results_file)), "/")
   
-  total_gsea_results <- lapply(names(total_gene_sets), function(gs_name) {
+  dir.create(results_dir, showWarnings = F)
+  
+  # Calculate GSEA results per cell type -----------------------------------------
+  
+  gsea_results <- lapply(results_list, function(degs) {
     
-    print(gs_name)
+    # Create ranked gene list (by log fold change or stat)
+    # Important: remove NAs and sort
+    ranked_genes <- degs %>%
+      filter(!is.na(stat) &
+               !is.infinite(stat)) %>%
+      arrange(desc(stat)) %>%
+      pull(stat, name = gene)
     
-    gene_sets <- total_gene_sets[[gs_name]]
-    # run GSEA
-    fgsea_results <- fgsea(
-      pathways = gene_sets,
-      stats = ranked_genes,
-      minSize = 15, # Minimal size of a gene set to test
-      maxSize = 500 # Maximal size of a gene set to test
-    )
+    total_gsea_results <- lapply(names(total_gene_sets), function(gs_name) {
+      
+      print(gs_name)
+      
+      gene_sets <- total_gene_sets[[gs_name]]
+      # run GSEA
+      fgsea_results <- fgsea(
+        pathways = gene_sets,
+        stats = ranked_genes,
+        minSize = 15, # Minimal size of a gene set to test
+        maxSize = 500 # Maximal size of a gene set to test
+      )
+      
+      return(fgsea_results[order(fgsea_results$pval),])
+    })
+    names(total_gsea_results) <- names(total_gene_sets)
     
-    return(fgsea_results[order(fgsea_results$pval),])
+    # return GSEA results as well as ranked list
+    return(list(ranked_genes=ranked_genes,
+                gsea_results=total_gsea_results,
+                degs=degs))
+    
   })
-  names(total_gsea_results) <- names(total_gene_sets)
   
-  # return GSEA results as well as ranked list
-  return(list(ranked_genes=ranked_genes,
-              gsea_results=total_gsea_results,
-              degs=degs))
+  saveRDS(gsea_results, file=paste0(results_dir, "total.gsea_results.RDS"))
   
-})
-
-saveRDS(gsea_results, file=paste0(results_dir, "total.gsea_results.RDS"))
-
-# output to excel files
-
-for (cell in names(gsea_results)) {
+  # output to excel files
   
-  cell_results <- gsea_results[[cell]]$gsea_results
-  
-  write.xlsx(cell_results, 
-             file=paste0(results_dir, to_snake_case(cell), ".gsea_results.xlsx"),
-             colWidths="auto")
-  
-  
+  for (cell in names(gsea_results)) {
+    
+    cell_results <- gsea_results[[cell]]$gsea_results
+    
+    write.xlsx(cell_results, 
+               file=paste0(results_dir, to_snake_case(cell), ".gsea_results.xlsx"),
+               colWidths="auto")
+    
+    
+  }
 }
-
 
 
 
