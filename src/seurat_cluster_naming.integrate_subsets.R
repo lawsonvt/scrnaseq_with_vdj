@@ -201,4 +201,11 @@ init_seu <- subset(init_seu, subset = cell_category == "Microglia")
 
 SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.just_microglia.seurat.RDS"))
 
+# filter again down to just microglia without intermediate
+
+init_seu <- subset(init_seu, subset = merged_cell_name != "Intermediate Microglia")
+
+SaveSeuratRds(init_seu, file=paste0(out_dir, "subset_names_merged.just_microglia.no_intermediate.seurat.RDS"))
+
+
 
