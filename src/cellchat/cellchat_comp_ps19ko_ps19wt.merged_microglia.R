@@ -109,9 +109,59 @@ gg1 + gg2
 ggsave(paste0(out_dir, "pathway_information_flow_comp.png"), width=10, height=8)
 
 
-data <- rankNet(cellChat, mode = "comparison", measure = "weight", 
-        sources.use = NULL, targets.use = NULL, 
-        stacked = F, do.stat = TRUE, return.data = T)
+pathway_data <- rankNet(cellChat, mode = "comparison", measure = "weight", 
+                        sources.use = NULL, targets.use = NULL, 
+                        stacked = F, do.stat = TRUE, return.data = T)
+pathway_data <- pathway_data$signaling.contribution
 
-data <- data$signaling.contribution
+top_pathways <- unique(pathway_data[pathway_data$pvalues < 0.05 &
+                                      pathway_data$contribution.scaled > 3,]$name)
+
+top_pathway_data <- pathway_data[pathway_data$name %in% top_pathways,]
+
+
+# add in scaling data
+
+top_pathway_data$total <- 0
+
+for (top_pathway in top_pathways) {
+  
+  contribution_sum <- sum(top_pathway_data[top_pathway_data$name == top_pathway,]$contribution.scaled)
+  
+  top_pathway_data[top_pathway_data$name == top_pathway,]$total <- contribution_sum
+  
+}
+
+top_pathway_data$contribution_rel <- top_pathway_data$contribution.scaled / 
+  top_pathway_data$total
+top_pathway_data$contribution_rel_d <- top_pathway_data$contribution_rel
+top_pathway_data[top_pathway_data$group == "PS19-KO",]$contribution_rel_d <-
+  top_pathway_data[top_pathway_data$group == "PS19-KO",]$contribution_rel_d * -1
+
+top_pathway_data <- top_pathway_data[order(top_pathway_data$contribution_rel_d),]
+top_pathway_data$name <- factor(as.character(top_pathway_data$name),
+                                levels=unique(as.character(top_pathway_data$name)))
+
+ggplot(top_pathway_data,
+       aes(y=name,
+           x=contribution_rel,
+           fill=group)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  labs(y=NULL, x="Relative Information Flow", fill=NULL) +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values=c("blue","orange"))
+ggsave(paste0(out_dir, "pathway_information_flow_comp.relative_filtered.png"), width=7, height=5)
+
+ggplot(top_pathway_data,
+       aes(y=name,
+           x=contribution.scaled,
+           fill=group)) +
+  geom_bar(position="dodge", stat="identity") +
+  theme_bw() +
+  labs(y=NULL, x="Information Flow", fill=NULL) +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values=c("blue","orange"))
+ggsave(paste0(out_dir, "pathway_information_flow_comp.filtered.png"), width=7, height=5)
+
 
