@@ -3,6 +3,7 @@ library(SeuratObject)
 library(ggplot2)
 library(RColorBrewer)
 library(ggsci)
+library(scRepertoire)
 
 out_dir <- "results/clustering_plots/"
 dir.create(out_dir, showWarnings = F)
@@ -255,4 +256,64 @@ ggplot(t_cell_counts,
   labs(y="Cell Count", x=NULL, fill=NULL)
 ggsave(paste0(out_dir, "t_cell_counts.bar_plot.png"),
        width=5, height=3)
+
+# filter down to tcells
+tcell_seu <- subset(total_seu, subset = cell_category == "T Cells")
+
+# redo umap
+tcell_seu <- RunPCA(tcell_seu, npcs = 20)
+
+max_pc_dim <- 10
+
+tcell_seu <- RunUMAP(tcell_seu, dims = 1:max_pc_dim, reduction="pca", reduction.name="umap.tcell_pca")
+
+DimPlot(tcell_seu, reduction="umap.tcell_pca",
+        group.by= "merged_cell_name") +
+  labs(x="UMAP 1", y="UMAP 2", title=NULL)
+ggsave(paste0(out_dir, "tcell_umap.png"),
+       width=6, height=4)
+
+DimPlot(tcell_seu, reduction="umap.tcell_pca",
+        group.by= "merged_cell_name",
+        split.by = "condition", ncol=2) +
+  labs(x="UMAP 1", y="UMAP 2", title=NULL)
+ggsave(paste0(out_dir, "tcell_umap.per_condition.png"),
+       width=8, height=6)
+
+
+# integrate clonal data
+
+# merge in TCR clonal data
+combined_tcr <- readRDS("results/tcr_analysis.subset_integrated/combined_tcr.RDS")
+
+tcell_seu <- combineExpression(combined_tcr,
+                             tcell_seu,
+                             cloneCall="gene",
+                             group.by = "sample",
+                             proportion = F,
+                             cloneSize=c(Single=1, Small=5, Medium=20, Large=100, Hyperexpanded=500))
+colorblind_vector <- hcl.colors(n=7, palette = "inferno", fixup = TRUE)
+
+tcell_meta <- tcell_seu@meta.data
+
+ggplot(tcell_meta, 
+       aes(x=condition,
+           fill=cloneSize)) +
+  geom_bar(color="black") +
+  facet_wrap(~ merged_cell_name, nrow=1) +
+  scale_fill_manual(values=rev(colorblind_vector[c(1,3,4,5,7)])) +
+  theme_bw() +
+  theme(axis.text.x=element_text(angle=35, hjust=1)) +
+  labs(y = "Cell Count", x=NULL, fill="Clone Size")
+ggsave(paste0(out_dir, "tcell_clonal_counts.png"), width=7, height=4)
+
+DimPlot(tcell_seu, reduction="umap.tcell_pca",
+        group.by= "cloneSize",
+        split.by = "condition", ncol=2) +
+  scale_color_manual(values=rev(colorblind_vector[c(1,3,4,5,7)])) +
+  labs(x="UMAP 1", y="UMAP 2", title=NULL)
+ggsave(paste0(out_dir, "tcell_umap.clone_size.per_condition.png"),
+       width=8, height=6)
+
+
 
