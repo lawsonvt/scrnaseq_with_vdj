@@ -43,7 +43,7 @@ print("Run Hallmark")
 
 total_seu <- irGSEA.score(object = total_seu, 
                      assay = "RNA", 
-                     slot = "data", 
+                     slot = "counts", 
                      seeds = 123, 
                      ncores = 4,
                      min.cells = 3, 
@@ -61,7 +61,7 @@ print("Run KEGG")
 
 total_seu <- irGSEA.score(object = total_seu, 
                           assay = "RNA", 
-                          slot = "data", 
+                          slot = "counts", 
                           seeds = 123, 
                           ncores = 4,
                           min.cells = 3, 
@@ -79,7 +79,7 @@ print("Run Reactome")
 
 total_seu <- irGSEA.score(object = total_seu, 
                           assay = "RNA", 
-                          slot = "data", 
+                          slot = "counts", 
                           seeds = 123, 
                           ncores = 4,
                           min.cells = 3, 
@@ -97,7 +97,7 @@ print("Run Wikipathays")
 
 total_seu <- irGSEA.score(object = total_seu, 
                           assay = "RNA", 
-                          slot = "data", 
+                          slot = "counts", 
                           seeds = 123, 
                           ncores = 4,
                           min.cells = 3, 
@@ -115,7 +115,7 @@ print("Run GO BP")
 
 total_seu <- irGSEA.score(object = total_seu, 
                           assay = "RNA", 
-                          slot = "data", 
+                          slot = "counts", 
                           seeds = 123, 
                           ncores = 4,
                           min.cells = 3, 
@@ -134,7 +134,7 @@ print("Run GO MF")
 
 total_seu <- irGSEA.score(object = total_seu, 
                           assay = "RNA", 
-                          slot = "data", 
+                          slot = "counts", 
                           seeds = 123, 
                           ncores = 4,
                           min.cells = 3, 
