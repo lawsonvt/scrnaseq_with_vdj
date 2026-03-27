@@ -1,5 +1,4 @@
 library(Seurat)
-library(SeuratData)
 library(irGSEA)
 library(msigdbr)  # For gene sets
 library(dplyr)
