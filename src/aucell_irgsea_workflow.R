@@ -12,6 +12,8 @@ dir.create(out_dir, showWarnings = F)
 # load in seurat objects
 total_seu <- LoadSeuratRds("results/seurat_cluster_naming.integrate_subsets/subset_names_merged.no_low_count.seurat.RDS")
 
+total_seu <- UpdateSeuratObject(total_seu)
+
 # Load in msigdbr and get gene sets --------------------------------------------
 hallmark_gene_sets <- msigdbr(species = "Mus musculus", collection = "H")
 reactome_gene_sets <- msigdbr(species = "Mus musculus", collection = "C2", subcollection = "CP:REACTOME")
