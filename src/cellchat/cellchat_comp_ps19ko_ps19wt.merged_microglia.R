@@ -28,14 +28,17 @@ ggsave(paste0(out_dir, "total_interaction_comparison.barplots.png"), width=8, he
 
 # differential number of interactions
 
+groupSize <- as.numeric(table(cc_ps19ko@idents)) +
+  as.numeric(table(cc_ps19wt@idents))
+
 # where red (or blue) colored edges represent increased
 # (or decreased) signaling in the second dataset compared to the first one.
 pdf(paste0(out_dir, "total_comparison.number_of_interactions.circle_plot.pdf"), width=10, height=9)
-netVisual_diffInteraction(cellChat, weight.scale = T)
+netVisual_diffInteraction(cellChat, weight.scale = T, vertex.weight = groupSize)
 dev.off()
 
 pdf(paste0(out_dir, "total_comparison.weight_of_interactions.circle_plot.pdf"), width=10, height=9)
-netVisual_diffInteraction(cellChat, weight.scale = T, measure = "weight")
+netVisual_diffInteraction(cellChat, weight.scale = T, measure = "weight", vertex.weight = groupSize)
 dev.off()
 
 
@@ -48,9 +51,14 @@ dir.create(cell_dir, showWarnings = F)
 
 for (cell in cells) {
   
-  pdf(paste0(cell_dir, to_snake_case(cell), "_comparison.weight_of_interactions.circle_plot.pdf"), width=10, height=9)
+  pdf(paste0(cell_dir, to_snake_case(cell), "_comparison.weight_of_interactions.circle_plot.pdf"), width=7, height=5)
   netVisual_diffInteraction(cellChat, weight.scale = T, measure = "weight",
-                            sources.use = cell)
+                            sources.use = cell, vertex.weight = groupSize)
+  dev.off()
+  
+  pdf(paste0(cell_dir, to_snake_case(cell), "_comparison.weight_of_interactions.circle_plot.no_labels.pdf"), width=7, height=5)
+  netVisual_diffInteraction(cellChat, weight.scale = T, measure = "weight",
+                            sources.use = cell, vertex.weight = groupSize, vertex.label.cex = 0.000001)
   dev.off()
   
 }
@@ -150,7 +158,7 @@ ggplot(top_pathway_data,
   theme_bw() +
   labs(y=NULL, x="Relative Information Flow", fill=NULL) +
   theme(legend.position = "bottom") +
-  scale_fill_manual(values=c("blue","orange"))
+  scale_fill_manual(values=c("#b2182b","#2166ac"))
 ggsave(paste0(out_dir, "pathway_information_flow_comp.relative_filtered.png"), width=7, height=5)
 
 ggplot(top_pathway_data,
@@ -161,7 +169,116 @@ ggplot(top_pathway_data,
   theme_bw() +
   labs(y=NULL, x="Information Flow", fill=NULL) +
   theme(legend.position = "bottom") +
-  scale_fill_manual(values=c("blue","orange"))
+  scale_fill_manual(values=c("#b2182b","#2166ac"))
 ggsave(paste0(out_dir, "pathway_information_flow_comp.filtered.png"), width=7, height=5)
+
+# more plots, trying to discern ligand pairs
+
+# CD8+ plots
+
+netVisual_bubble(cellChat,
+                 sources.use = "CD8+",
+                 comparison=c(1,2),
+                 color.text = c("#2166ac","#b2182b"),
+                 angle.x = 45)
+ggsave(paste0(out_dir, "cd8.total_ligand_bubble_plot.png"), width=11, height=11)
+
+
+
+gg1 <- netVisual_bubble(cellChat,
+                 sources.use = "CD8+",
+                 targets.use = "Neutrophils",
+                 comparison=c(1,2),
+                 angle.x = 45,
+                 max.dataset = 2,
+                 color.text = c("#2166ac","#b2182b"),
+                 title.name = "Increased signaling in PS19-KO",
+                 remove.isolate = T)
+
+gg2 <- netVisual_bubble(cellChat,
+                 sources.use = "CD8+",
+                 targets.use = "Neutrophils",
+                 comparison=c(1,2),
+                 angle.x = 45,
+                 max.dataset = 1,
+                 color.text = c("#2166ac","#b2182b"),
+                 title.name = "Decreased signaling in PS19-KO",
+                 remove.isolate = T)
+
+gg1 + gg2
+ggsave(paste0(out_dir, "cd8_to_neutrophils.ligand_bubble_plot.png"), width=8, height=6)
+
+# same for Naive T Cells
+
+netVisual_bubble(cellChat,
+                 sources.use = "Naive T Cells",
+                 comparison=c(1,2),
+                 color.text = c("#2166ac","#b2182b"),
+                 angle.x = 45)
+ggsave(paste0(out_dir, "naive_t.total_ligand_bubble_plot.png"), width=11, height=11)
+
+
+gg1 <- netVisual_bubble(cellChat,
+                        sources.use = "Naive T Cells",
+                        targets.use = "Neutrophils",
+                        comparison=c(1,2),
+                        angle.x = 45,
+                        max.dataset = 2,
+                        color.text = c("#2166ac","#b2182b"),
+                        title.name = "Increased signaling in PS19-KO",
+                        remove.isolate = T)
+
+gg2 <- netVisual_bubble(cellChat,
+                        sources.use = "Naive T Cells",
+                        targets.use = "Neutrophils",
+                        comparison=c(1,2),
+                        angle.x = 45,
+                        max.dataset = 1,
+                        color.text = c("#2166ac","#b2182b"),
+                        title.name = "Decreased signaling in PS19-KO",
+                        remove.isolate = T)
+
+gg1 + gg2
+ggsave(paste0(out_dir, "naive_t_to_neutrophils.ligand_bubble_plot.png"), width=8, height=6)
+
+
+gg1 <- netVisual_bubble(cellChat,
+                        sources.use = "Naive T Cells",
+                        targets.use = "B Cells",
+                        comparison=c(1,2),
+                        angle.x = 45,
+                        max.dataset = 2,
+                        color.text = c("#2166ac","#b2182b"),
+                        title.name = "Increased signaling in PS19-KO",
+                        remove.isolate = T)
+
+gg2 <- netVisual_bubble(cellChat,
+                        sources.use = "Naive T Cells",
+                        targets.use = "B Cells",
+                        comparison=c(1,2),
+                        angle.x = 45,
+                        max.dataset = 1,
+                        color.text = c("#2166ac","#b2182b"),
+                        title.name = "Decreased signaling in PS19-KO",
+                        remove.isolate = T)
+
+gg1 + gg2
+ggsave(paste0(out_dir, "naive_t_to_b_cells.ligand_bubble_plot.png"), width=8, height=6)
+
+# using differential expression analysis
+
+
+df <- netVisual_bubble(cellChat,
+                       sources.use = "Naive T Cells",
+                       targets.use = "B Cells",
+                       comparison=c(1,2),
+                       angle.x = 45,
+                       max.dataset = 2,
+                       color.text = c("#2166ac","#b2182b"),
+                       title.name = "Increased signaling in PS19-KO",
+                       remove.isolate = T,
+                       return.data = T)
+
+
 
 
