@@ -46,7 +46,7 @@ dir.create(cell_dir, showWarnings = F)
 
 for (cell in cells) {
   
-  pdf(paste0(cell_dir, to_snake_case(cell), "_comparison.weight_of_interactions.circle_plot.pdf"), width=10, height=9)
+  pdf(paste0(cell_dir, to_snake_case(cell), "_comparison.weight_of_interactions.circle_plot.pdf"), width=7, height=5)
   netVisual_diffInteraction(cellChat, weight.scale = T, measure = "weight",
                             sources.use = cell)
   dev.off()
@@ -147,7 +147,7 @@ ggplot(top_pathway_data,
   theme_bw() +
   labs(y=NULL, x="Relative Information Flow", fill=NULL) +
   theme(legend.position = "bottom") +
-  scale_fill_manual(values=c("blue","orange"))
+  scale_fill_manual(values=c("#b2182b","#2166ac"))
 ggsave(paste0(out_dir, "pathway_information_flow_comp.relative_filtered.png"), width=7, height=5)
 
 ggplot(top_pathway_data,
@@ -158,5 +158,5 @@ ggplot(top_pathway_data,
   theme_bw() +
   labs(y=NULL, x="Information Flow", fill=NULL) +
   theme(legend.position = "bottom") +
-  scale_fill_manual(values=c("blue","orange"))
+  scale_fill_manual(values=c("#b2182b","#2166ac"))
 ggsave(paste0(out_dir, "pathway_information_flow_comp.filtered.png"), width=7, height=5)
