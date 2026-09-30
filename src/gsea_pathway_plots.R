@@ -48,7 +48,47 @@ ggplot(hallmark_subset,
     midpoint = 0
   ) +
   labs(x="-log10(PValue)", y=NULL)
-ggsave(paste0(out_dir, "microglia_hallmark_top.dot_plot.png"), width=7, height=5)
+ggsave(paste0(out_dir, "microglia_hallmark_top.dot_plot.png"), width=5.5, height=5)
+
+# same for GO BP
+
+gobp_subset <- mg_results$gsea_results$gobp[1:15,]
+
+gobp_subset$logp <- -log10(gobp_subset$pval)
+gobp_subset$pathway_pretty <- sapply(gobp_subset$pathway, function(p) {
+  
+  # drop DB name and replace underscores
+  p <- paste0(unlist(strsplit(p, "_"))[-1], collapse=" ")
+  
+  # make title
+  p <- str_to_title(p)
+  
+  # drop WP IDs
+  p <- gsub("Wp[0-9]+", "", p)
+  p <- trimws(p)
+  
+  return(p)
+  
+})
+
+gobp_subset$pathway_pretty <- factor(gobp_subset$pathway_pretty,
+                                         levels=rev(gobp_subset$pathway_pretty))
+
+ggplot(gobp_subset,
+       aes(x=logp, y=pathway_pretty,fill=NES)) +
+  geom_point(pch=21, size=5) +
+  theme_bw() +
+  xlim(0, 30) + 
+  scale_fill_gradient2(
+    low  = "blue",
+    mid  = "white",
+    high = "red",
+    midpoint = 0
+  ) +
+  labs(x="-log10(PValue)", y=NULL)
+ggsave(paste0(out_dir, "microglia_gobp_top.dot_plot.png"), width=7, height=5)
+
+
 
 # enrichment plot
 hallmark_gene_sets <- msigdbr(species = "Mus musculus", collection = "H")
@@ -77,11 +117,31 @@ ggsave(paste0(out_dir, "cd8_kras_signaling.enrichment_plot.png"), width=5, heigh
 plotEnrichment(
   pathways[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
   cd8_results$ranked_genes
-) + labs(title="IFN-γ Response")
+) + labs(title="IFN-γ Response",
+         x="Rank", y="Enrichment Score") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))
 ggsave(paste0(out_dir, "cd8_interferon_gamma.enrichment_plot.png"), width=5, height=3)
 
 
-# merge up GSEA results
-cd8_results_df <- bind_rows(cd8_results$gsea_results)
+adjp <- cd8_hallmark[cd8_hallmark$pathway == "HALLMARK_INTERFERON_GAMMA_RESPONSE",]$padj
+es <- cd8_hallmark[cd8_hallmark$pathway == "HALLMARK_INTERFERON_GAMMA_RESPONSE",]$ES
+nes <- cd8_hallmark[cd8_hallmark$pathway == "HALLMARK_INTERFERON_GAMMA_RESPONSE",]$NES
+
+
+plotEnrichment(
+  pathways[["HALLMARK_INTERFERON_GAMMA_RESPONSE"]],
+  cd8_results$ranked_genes
+) + labs(title="IFN-γ Response",
+         x="Rank", y="Enrichment Score") +
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14)) +
+  geom_text(x=1000, y=-0.2, label=paste0("Adj P-Value: ", formatC(adjp, format="e", digits=2)), 
+            color="red", size=4, hjust=0) +
+  geom_text(x=1000, y=-0.25, label=paste0("ES: ", round(es, digits=3)), color="red", size=4,
+            hjust=0) +
+  geom_text(x=1000, y=-0.3, label=paste0("NES: ", round(nes, digits=3)), 
+            color="red", size=4, hjust = 0)
+ggsave(paste0(out_dir, "cd8_interferon_gamma.enrichment_plot.annotated.png"), width=5, height=3)
 
 

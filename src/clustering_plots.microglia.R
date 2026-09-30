@@ -15,6 +15,28 @@ total_seu$condition <- gsub("^[A-H]+\\-[A-Z0-9]+\\-", "", total_seu$orig.ident)
 total_seu$condition <- factor(as.character(total_seu$condition),
                               levels=c("WT", "KO", "PS19-WT", "PS19-KO"))
 
+condition_xref <- data.frame(condition=factor(c("WT", "KO", "PS19-WT", "PS19-KO"),
+                                              levels=c("WT", "KO", "PS19-WT", "PS19-KO")),
+                             condition_plot = factor(c("SYK^WT",
+                                                "SYK^{Delta*MG}",
+                                                "PS19~SYK^WT",
+                                                "PS19~SYK^{Delta*MG}"),
+                                                levels=c("SYK^WT",
+                                                         "SYK^{Delta*MG}",
+                                                         "PS19~SYK^WT",
+                                                         "PS19~SYK^{Delta*MG}")))
+
+metadata <- total_seu@meta.data
+
+metadata$cell_id <- rownames(metadata)
+
+metadata <- merge(metadata,
+                  condition_xref)
+rownames(metadata) <- metadata$cell_id
+
+metadata <- metadata[colnames(total_seu),]
+
+total_seu$condition_plot <- metadata$condition_plot
 
 
 # get microglia sub markers
@@ -54,7 +76,8 @@ triple_markers <- c("Apoe","Clec7a","Cst7",
 
 DotPlot(total_seu,
         features=triple_markers) +
-  RotatedAxis() +labs(x=NULL, y=NULL)
+  RotatedAxis() +labs(x=NULL, y=NULL) +
+  theme(axis.text.y=element_text(size=16))
 ggsave(paste0(out_dir, "microglia_sub.marker_dot_plot.png"), width=7, height=4,
        bg="white")
 
@@ -90,8 +113,9 @@ ggsave(paste0(out_dir, "microglia_sub.marker_dot_plot.png"), width=7, height=4,
 
 DimPlot(total_seu, reduction="umap.harmony",
         group.by = "merged_cell_name", raster=F,
-        split.by="condition", ncol=2) +
-  labs(x="UMAP 1", y="UMAP 2", title=NULL)
+        split.by="condition_plot", ncol=2) +
+  labs(x="UMAP 1", y="UMAP 2", title=NULL) +
+  facet_wrap(~ condition_plot, labeller = label_parsed)
 ggsave(paste0(out_dir, "microglia_clusters.per_condition_umap.png"),
        width=8, height=6)
 

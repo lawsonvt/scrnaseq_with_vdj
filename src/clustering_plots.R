@@ -4,6 +4,7 @@ library(ggplot2)
 library(RColorBrewer)
 library(ggsci)
 library(scRepertoire)
+library(cowplot)
 
 out_dir <- "results/clustering_plots/"
 dir.create(out_dir, showWarnings = F)
@@ -17,6 +18,19 @@ total_seu$condition <- gsub("^[A-H]+\\-[A-Z0-9]+\\-", "", total_seu$orig.ident)
 
 total_seu$condition <- factor(as.character(total_seu$condition),
                               levels=c("WT", "KO", "PS19-WT", "PS19-KO"))
+
+condition_xref <- data.frame(condition=factor(c("WT", "KO", "PS19-WT", "PS19-KO"),
+                                              levels=c("WT", "KO", "PS19-WT", "PS19-KO")),
+                             condition_plot = factor(c("SYK^WT",
+                                                       "SYK^{Delta*MG}",
+                                                       "PS19~SYK^WT",
+                                                       "PS19~SYK^{Delta*MG}"),
+                                                     levels=c("SYK^WT",
+                                                              "SYK^{Delta*MG}",
+                                                              "PS19~SYK^WT",
+                                                              "PS19~SYK^{Delta*MG}")))
+
+
 
 
 # # broad cell type name
@@ -129,20 +143,33 @@ microglia_subset_counts <- microglia_subset_counts[order(microglia_subset_counts
 microglia_subset_counts$Var2 <- factor(microglia_subset_counts$Var2,
                                        levels=unique(microglia_subset_counts$Var2))
 
+# merge in condition plot names
+microglia_subset_counts <- merge(microglia_subset_counts,
+                                 condition_xref,
+                                 by.x="Var1", by.y="condition")
+
+microglia_subset_counts$condition_plot <- factor(microglia_subset_counts$condition_plot,
+                                                 levels=rev(levels(microglia_subset_counts$condition_plot)))
+
 ggplot(microglia_subset_counts,
-       aes(x=frac, y=Var1, fill=Var2)) +
+       aes(x=frac, y=condition_plot, fill=Var2)) +
   geom_bar(stat="identity", color="black") +
   scale_fill_brewer(palette = "Set2") +
   theme_bw() +
+  scale_y_discrete(labels=function(x) parse(text=x)) +
   labs(y=NULL, x="Percentage of Microglia Cells", fill=NULL)
 ggsave(paste0(out_dir, "percentage_of_microglia_cells.bar_plot.png"),
        width=5, height=3)
 
+microglia_subset_counts$condition_plot <- factor(microglia_subset_counts$condition_plot,
+                                                 levels=rev(levels(microglia_subset_counts$condition_plot)))
+
 ggplot(microglia_subset_counts,
-       aes(x=Var2, y=Freq.x, fill=Var1)) +
+       aes(x=Var2, y=Freq.x, fill=condition_plot)) +
   geom_bar(stat="identity", color="black", position="dodge") +
   #scale_fill_brewer(palette = "Set2") +
   theme_bw() +
+  scale_fill_discrete(labels=function(x) parse(text = x)) +
   theme(axis.text.x = element_text(angle=35, hjust=1)) +
   labs(y="Cell Count", x=NULL, fill=NULL)
 ggsave(paste0(out_dir, "microglia_cell_counts.bar_plot.png"),
@@ -165,21 +192,34 @@ broad_cell_counts <- broad_cell_counts[order(broad_cell_counts$frac,
 broad_cell_counts$Var2 <- factor(as.character(broad_cell_counts$Var2),
                                  levels=unique(broad_cell_counts$Var2))
 
+# merge in condition plot names
+broad_cell_counts <- merge(broad_cell_counts,
+                                 condition_xref,
+                                 by.x="Var1", by.y="condition")
+
+broad_cell_counts$condition_plot <- factor(broad_cell_counts$condition_plot,
+                                                 levels=rev(levels(broad_cell_counts$condition_plot)))
+
 ggplot(broad_cell_counts,
-       aes(x=frac, y=Var1, fill=Var2)) +
+       aes(x=frac, y=condition_plot, fill=Var2)) +
   geom_bar(stat="identity", color="black") +
   scale_fill_brewer(palette = "Set1") +
   theme_bw() +
+  scale_y_discrete(labels=function(x) parse(text=x)) +
   labs(y=NULL, x="Percentage of Total Cells", fill=NULL)
 ggsave(paste0(out_dir, "percentage_of_total_cells.bar_plot.png"),
        width=5, height=3)
 
+broad_cell_counts$condition_plot <- factor(broad_cell_counts$condition_plot,
+                                           levels=rev(levels(broad_cell_counts$condition_plot)))
+
 ggplot(broad_cell_counts,
-       aes(x=Var2, y=Freq.x, fill=Var1)) +
+       aes(x=Var2, y=Freq.x, fill=condition_plot)) +
   geom_bar(stat="identity", color="black", position="dodge") +
   #scale_fill_brewer(palette = "Set2") +
   theme_bw() +
   theme(axis.text.x = element_text(angle=35, hjust=1)) +
+  scale_fill_discrete(labels=function(x) parse(text = x)) +
   labs(y="Cell Count", x=NULL, fill=NULL)
 ggsave(paste0(out_dir, "total_cell_counts.bar_plot.png"),
        width=5, height=3)
@@ -201,21 +241,34 @@ broad_cell_counts <- broad_cell_counts[order(broad_cell_counts$frac,
 broad_cell_counts$Var2 <- factor(as.character(broad_cell_counts$Var2),
                                  levels=unique(broad_cell_counts$Var2))
 
+# merge in condition plot names
+broad_cell_counts <- merge(broad_cell_counts,
+                           condition_xref,
+                           by.x="Var1", by.y="condition")
+
+broad_cell_counts$condition_plot <- factor(broad_cell_counts$condition_plot,
+                                           levels=rev(levels(broad_cell_counts$condition_plot)))
+
 ggplot(broad_cell_counts,
-       aes(x=frac, y=Var1, fill=Var2)) +
+       aes(x=frac, y=condition_plot, fill=Var2)) +
   geom_bar(stat="identity", color="black") +
   scale_fill_brewer(palette = "Set1") +
   theme_bw() +
+  scale_y_discrete(labels=function(x) parse(text=x)) +
   labs(y=NULL, x="Percentage of Non-Microglia Cells", fill=NULL)
 ggsave(paste0(out_dir, "percentage_of_non_microglia_cells.bar_plot.png"),
        width=5, height=3)
 
+broad_cell_counts$condition_plot <- factor(broad_cell_counts$condition_plot,
+                                           levels=rev(levels(broad_cell_counts$condition_plot)))
+
 ggplot(broad_cell_counts,
-       aes(x=Var2, y=Freq.x, fill=Var1)) +
+       aes(x=Var2, y=Freq.x, fill=condition_plot)) +
   geom_bar(stat="identity", color="black", position="dodge") +
   #scale_fill_brewer(palette = "Set2") +
   theme_bw() +
   theme(axis.text.x = element_text(angle=35, hjust=1)) +
+  scale_fill_discrete(labels=function(x) parse(text = x)) +
   labs(y="Cell Count", x=NULL, fill=NULL)
 ggsave(paste0(out_dir, "non_microglia_cell_counts.bar_plot.png"),
        width=5, height=3)
@@ -315,5 +368,82 @@ DimPlot(tcell_seu, reduction="umap.tcell_pca",
 ggsave(paste0(out_dir, "tcell_umap.clone_size.per_condition.png"),
        width=8, height=6)
 
+# other TCell plots
+
+tcell_seu_ps19 <- subset(tcell_seu, subset = condition %in% c("PS19-WT","PS19-KO"))
+
+tcell_ps19_meta <- tcell_seu_ps19@meta.data
+
+tcell_ps19_meta <- merge(tcell_ps19_meta,
+                         condition_xref,
+                         by="condition")
+
+ggplot(tcell_ps19_meta,
+       aes(x=condition_plot,
+           fill=merged_cell_name)) +
+  geom_bar(color="black") +
+  facet_wrap(~ merged_cell_name, nrow=1) +
+  theme_bw() +
+  scale_x_discrete(labels=function(x) parse(text=x)) +
+  guides(fill="none") +
+  theme(axis.text.x=element_text(angle=35, hjust=1)) +
+  labs(x=NULL, y="Cell Count")
+ggsave(paste0(out_dir, "tcell_ps19_counts.png"), width=5, height=4)
+
+# plot marker genes
+
+genes <- c("Gzmb", "Gzmk", "Ifng", "Irf8", "Fos")
+
+genes <- genes[genes %in% rownames(tcell_seu_ps19)]
+
+Idents(tcell_seu_ps19) <- "merged_cell_name"
+
+
+vln_list <- lapply(genes, function(gene) {
+  
+  VlnPlot(tcell_seu_ps19,
+          features = gene,
+          split.by="condition") +
+    labs(x=NULL)
+  
+})
+
+plot_grid(plotlist=vln_list)
+ggsave(paste0(out_dir, "tcell_effector_violins.png"), width=12, height=6)
+
+VlnPlot(tcell_seu_ps19,
+        features = genes,
+        split.by="condition")
+
+VlnPlot(tcell_seu_ps19,
+        features = genes[3],
+        split.by="condition")
+
+# final plot for the paper
+p1 <- VlnPlot(tcell_seu_ps19,
+        idents="CD8+",
+        features = c("Gzmb"),
+        split.by = "condition") +
+  labs(x=NULL) + guides(fill = "none")
+
+p2 <- VlnPlot(tcell_seu_ps19,
+              idents="CD8+",
+              features = c("Gzmk"),
+              split.by = "condition") +
+  labs(x=NULL)
+
+plot_grid(p1,p2, rel_widths = c(1,1.3))
+ggsave(paste0(out_dir, "gzmb_gzmk_violins.cd8.png"), width=8, height=5)
+
+# use wilcox test
+
+tcell_seu_ps19_cd8 <- subset(tcell_seu_ps19, subset= merged_cell_name == "CD8+")
+
+Idents(tcell_seu_ps19_cd8) <- "condition"
+
+ps19_cd8 <- FindMarkers(tcell_seu_ps19_cd8,
+                        ident.1 = "PS19-KO",
+                        ident.2 = "PS19-WT",
+                        test.use="wilcox")
 
 
